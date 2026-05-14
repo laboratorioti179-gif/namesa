@@ -1104,6 +1104,44 @@ export default function App() {
         meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover";
         document.head.appendChild(meta);
 
+        const iconLink = document.createElement('link');
+        iconLink.rel = "icon";
+        iconLink.href = "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png";
+        document.head.appendChild(iconLink);
+
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = "apple-touch-icon";
+        appleIcon.href = "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png";
+        document.head.appendChild(appleIcon);
+
+        const manifest = {
+            "name": "NaMesa",
+            "short_name": "NaMesa",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#0a0a0a",
+            "theme_color": "#0a0a0a",
+            "icons": [
+                {
+                    "src": "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+
         const link = document.createElement('link');
         link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap';
         link.rel = 'stylesheet';
