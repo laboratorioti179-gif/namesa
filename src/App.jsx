@@ -1099,21 +1099,61 @@ const Dashboard = ({ onLogout }) => {
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     useEffect(() => {
+        const generateAppIcon = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Fundo Preto Arredondado (Estilo iOS/Android Premium)
+            ctx.fillStyle = '#0a0a0a';
+            const r = 100; // Border radius
+            ctx.beginPath();
+            ctx.moveTo(r, 0);
+            ctx.lineTo(512 - r, 0);
+            ctx.quadraticCurveTo(512, 0, 512, r);
+            ctx.lineTo(512, 512 - r);
+            ctx.quadraticCurveTo(512, 512, 512 - r, 512);
+            ctx.lineTo(r, 512);
+            ctx.quadraticCurveTo(0, 512, 0, 512 - r);
+            ctx.lineTo(0, r);
+            ctx.quadraticCurveTo(0, 0, r, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Texto "Na" (Branco)
+            ctx.font = 'bold 110px "Inter", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText('Na', 185, 285);
+
+            // Texto "Mesa" (Dourado)
+            ctx.fillStyle = '#c4a47c';
+            ctx.fillText('Mesa', 335, 285);
+
+            return canvas.toDataURL('image/png');
+        };
+
+        const iconData = generateAppIcon();
+
         const meta = document.createElement('meta');
         meta.name = "viewport";
         meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover";
         document.head.appendChild(meta);
 
+        // Favicon padrão
         const iconLink = document.createElement('link');
         iconLink.rel = "icon";
-        iconLink.href = "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png";
+        iconLink.href = iconData;
         document.head.appendChild(iconLink);
 
+        // Ícone para iPhone/iOS
         const appleIcon = document.createElement('link');
         appleIcon.rel = "apple-touch-icon";
-        appleIcon.href = "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png";
+        appleIcon.href = iconData;
         document.head.appendChild(appleIcon);
 
+        // Configuração do Manifesto para instalação no Android/Chrome
         const manifest = {
             "name": "NaMesa",
             "short_name": "NaMesa",
@@ -1123,12 +1163,12 @@ export default function App() {
             "theme_color": "#0a0a0a",
             "icons": [
                 {
-                    "src": "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png",
+                    "src": iconData,
                     "sizes": "192x192",
                     "type": "image/png"
                 },
                 {
-                    "src": "e72e3f03-a3ff-4ad9-b9e3-7ed9d79206fa_2.png",
+                    "src": iconData,
                     "sizes": "512x512",
                     "type": "image/png"
                 }
