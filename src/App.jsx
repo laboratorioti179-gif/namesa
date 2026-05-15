@@ -674,9 +674,9 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 };
 
 const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
-    const baseUrl = `https://namesa.app/menu?id=${userId}`;
-    const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
     const [restaurantName, setRestaurantName] = useState('NaMesa');
+    const [inputUrl, setInputUrl] = useState('https://namesa-one.vercel.app/cardapio-digital.html');
+    const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
     useEffect(() => {
         try {
@@ -695,7 +695,8 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
 
         const img = new Image();
         img.crossOrigin = 'Anonymous';
-        const qrData = encodeURIComponent(baseUrl);
+        const separator = inputUrl.includes('?') ? '&' : '?';
+        const qrData = encodeURIComponent(`${inputUrl}${separator}id=${userId}`);
         img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}&color=171717`;
         
         img.onload = () => {
@@ -739,12 +740,27 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
                     </button>
                 </div>
             </div>
+
+            <div className="bg-[#1e1e1e] p-4 rounded-xl border border-[#2a2a2a] mb-6">
+                <label className="block text-sm text-[#a0a0a0] mb-2">Link do seu Cardápio Digital (Vercel)</label>
+                <input 
+                    type="text" 
+                    value={inputUrl} 
+                    onChange={(e) => setInputUrl(e.target.value)} 
+                    className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:outline-none focus:border-[#c4a47c] transition-colors" 
+                    placeholder="https://namesa-one.vercel.app/cardapio-digital.html" 
+                />
+            </div>
             
             <div className="flex justify-center py-8">
                 <div className="bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center p-8 w-full max-w-[400px] h-[450px] relative border border-[#2a2a2a] overflow-hidden">
                     <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
                     <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(baseUrl)}&color=171717`} alt="QR Code" className="w-[250px] h-[250px]" />
+                    <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(inputUrl + (inputUrl.includes('?') ? '&' : '?') + 'id=' + userId)}&color=171717`} 
+                        alt="QR Code" 
+                        className="w-[250px] h-[250px]" 
+                    />
                 </div>
             </div>
             
@@ -1372,8 +1388,10 @@ const Dashboard = ({ onLogout, userId }) => {
                     {activeTab === 'qrcode' && <QRCodeGenerator onSimulate={() => setActiveTab('simulador')} menuData={menuData} onAddPedido={handleNovoPedido} userId={userId} />}
                     {activeTab === 'perfil' && <PerfilEditor />}
                     {activeTab === 'simulador' && (
-                        <div className="max-w-[400px] mx-auto h-[80vh] bg-black rounded-2xl overflow-hidden border border-[#2a2a2a] shadow-2xl">
-                            <SimuladorCliente onBack={() => setActiveTab('qrcode')} onAddPedido={handleNovoPedido} menuData={menuData} userId={userId} />
+                        <div className="fixed inset-0 z-[100] flex justify-end bg-black/80 backdrop-blur-sm transition-opacity">
+                            <div className="w-full sm:w-[400px] h-full relative">
+                                <SimuladorCliente onBack={() => setActiveTab('qrcode')} onAddPedido={handleNovoPedido} menuData={menuData} userId={userId} />
+                            </div>
                         </div>
                     )}
                 </div>
