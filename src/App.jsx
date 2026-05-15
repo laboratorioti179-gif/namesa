@@ -4,7 +4,7 @@ import {
     TrendingUp, Settings, Plus, Minus, ShoppingCart, 
     X, ArrowLeft, Download, Send, Search, 
     PieChart as PieChartIcon, BarChart3, ChevronLeft, ChevronRight, Save, MapPin, Store, Phone, Mail, Link as LinkIcon,
-    ImagePlus, Trash2, Play, CheckCircle, DollarSign, Check, AlertCircle, BellRing
+    ImagePlus, Trash2, Play, CheckCircle, DollarSign, Check, AlertCircle, BellRing, Camera
 } from 'lucide-react';
 import { 
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
@@ -22,6 +22,8 @@ const supabaseHeaders = {
 };
 
 const formatPrice = (price) => Number(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTUwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzEyMTIxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iYXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjNGE0N2MiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNFTSBGT1RPPC90ZXh0Pjwvc3ZnPg==';
 
 const LoginScreen = ({ onLogin }) => {
     const [email, setEmail] = useState('');
@@ -421,7 +423,12 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
 
 const ItemCard = ({ item, onAdd }) => (
     <div className="bg-[#121212] border border-[#2a2a2a] rounded-lg mb-4 overflow-hidden shadow-lg">
-        <img src={item.image} alt={item.name} className="w-full h-40 object-cover" />
+        <img 
+            src={item.image || fallbackImage} 
+            alt={item.name} 
+            onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
+            className="w-full h-40 object-cover" 
+        />
         <div className="p-4 flex justify-between items-center gap-4">
             <div className="flex-1">
                 <h3 className="font-semibold text-[#f5f5f5]">{item.name}</h3>
@@ -757,12 +764,31 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
-    const handleImageUpload = (e) => {
+    const handleImageFile = (e, setter) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setNewItemImage(reader.result);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    setter(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = reader.result;
             };
             reader.readAsDataURL(file);
         }
@@ -770,7 +796,9 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
 
     const handleItemChange = (categoryIndex, itemIndex, field, value) => {
         const newData = [...menuData];
-        newData[categoryIndex].items[itemIndex][field] = value;
+        newData[categoryIndex] = { ...newData[categoryIndex] };
+        newData[categoryIndex].items = [...newData[categoryIndex].items];
+        newData[categoryIndex].items[itemIndex] = { ...newData[categoryIndex].items[itemIndex], [field]: value };
         setMenuData(newData);
     };
 
@@ -798,7 +826,7 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                         nome: item.name,
                         descricao: item.description,
                         preco: parseFloat(item.price) || 0,
-                        imagem_url: item.image
+                        imagem_url: item.image ? item.image.trim() : ''
                     })
                 });
             }
@@ -811,7 +839,10 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
         if (!newItemName || !selectedCategoryId) return;
         setIsAdding(true);
         try {
-            const finalImage = newItemImage || `https://placehold.co/150x100/121212/c4a47c?text=${newItemName.substring(0,2).toUpperCase()}`;
+            const finalImage = newItemImage && newItemImage.trim() !== '' 
+                ? newItemImage.trim() 
+                : fallbackImage;
+            
             const res = await fetch(`${supabaseUrl}/rest/v1/itens_cardapio`, {
                 method: 'POST',
                 headers: supabaseHeaders,
@@ -864,11 +895,26 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                     <div className="space-y-4">
                         {category.items.map((item, iIdx) => (
                             <div key={item.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-[#121212] p-4 rounded-lg border border-[#2a2a2a]">
-                                <img src={item.image} alt={item.name} className="w-24 h-16 rounded-md object-cover border border-[#2a2a2a]" />
+                                <img 
+                                    src={item.image || fallbackImage} 
+                                    alt={item.name} 
+                                    onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
+                                    className="w-24 h-16 rounded-md object-cover border border-[#2a2a2a]" 
+                                />
                                 <div className="flex-1 w-full space-y-2">
                                     <input type="text" value={item.name} onChange={(e) => handleItemChange(cIdx, iIdx, 'name', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#f5f5f5] font-semibold focus:outline-none focus:border-[#c4a47c] px-1" />
                                     <input type="text" value={item.description} onChange={(e) => handleItemChange(cIdx, iIdx, 'description', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" />
-                                    <input type="text" value={item.image} onChange={(e) => handleItemChange(cIdx, iIdx, 'image', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" placeholder="URL da Foto" />
+                                    <div className="flex items-center gap-2 w-full border-b border-[#2a2a2a] pb-1 px-1">
+                                        <input type="text" value={item.image} onChange={(e) => handleItemChange(cIdx, iIdx, 'image', e.target.value)} className="w-full bg-transparent text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c]" placeholder="Link da Foto" />
+                                        <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Carregar Foto">
+                                            <ImagePlus size={16} />
+                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
+                                        </label>
+                                        <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Tirar Foto com a Câmera">
+                                            <Camera size={16} />
+                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
+                                        </label>
+                                    </div>
                                 </div>
                                 <div className="w-full sm:w-24">
                                     <input type="number" value={item.price} onChange={(e) => handleItemChange(cIdx, iIdx, 'price', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#c4a47c] p-2 focus:outline-none focus:border-[#c4a47c]" />
@@ -883,8 +929,18 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
             <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a] mt-6">
                 <h3 className="text-lg font-bold text-[#c4a47c] mb-4">Adicionar Novo Item</h3>
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="flex-1 w-full">
-                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="URL da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
+                    <div className="flex-1 w-full space-y-2">
+                        <div className="flex gap-2">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium">
+                                <ImagePlus size={14} /> Carregar Foto
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, setNewItemImage)} />
+                            </label>
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium">
+                                <Camera size={14} /> Tirar Foto
+                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, setNewItemImage)} />
+                            </label>
+                        </div>
+                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="Ou cole o Link da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg text-sm" />
                     </div>
                     <div className="flex-1 w-full">
                         <select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg">
@@ -1139,7 +1195,7 @@ const Dashboard = ({ onLogout, userId }) => {
     ];
 
     useEffect(() => {
-        const fetchInicial = async () => {
+        const fetchInicial = async (isInterval = false) => {
             try {
                 const [catRes, itemsRes, pedRes] = await Promise.all([
                     fetch(`${supabaseUrl}/rest/v1/categorias?select=*&order=ordem.asc`, { headers: supabaseHeaders }),
@@ -1175,20 +1231,20 @@ const Dashboard = ({ onLogout, userId }) => {
                     setPedidos(novosPeds);
                 }
 
-                if (categorias) {
+                if (categorias && !isInterval) {
                     setMenuData(categorias.map(c => ({
                         categoryId: c.id,
                         category: c.nome,
                         items: itens.filter(i => i.categoria_id === c.id).map(i => ({
                             id: i.id, name: i.nome, description: i.descricao, price: i.preco,
-                            image: i.imagem_url || `https://placehold.co/150x100/121212/c4a47c?text=${i.nome.substring(0,2)}`
+                            image: i.imagem_url || fallbackImage
                         }))
                     })));
                 }
             } catch (e) { console.error(e); }
         };
         fetchInicial();
-        const interval = setInterval(fetchInicial, 10000);
+        const interval = setInterval(() => fetchInicial(true), 10000);
         return () => clearInterval(interval);
     }, [userId]);
 
