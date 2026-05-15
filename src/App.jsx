@@ -92,6 +92,8 @@ const LoginScreen = ({ onLogin }) => {
                         setError(data.msg || data.message || 'Erro ao criar conta. Verifique os dados informados.');
                     } else {
                         setError('');
+                        localStorage.setItem('userMetadata', JSON.stringify(data.user?.user_metadata || { restaurantName, address, ownerName, cpf }));
+                        localStorage.setItem('userEmail', data.user?.email || email.trim());
                         onLogin(data.user?.id || '00000000-0000-0000-0000-000000000000');
                     }
                 } catch (e) {
@@ -115,10 +117,14 @@ const LoginScreen = ({ onLogin }) => {
             if (res.ok) {
                 const data = await res.json();
                 setError('');
+                localStorage.setItem('userMetadata', JSON.stringify(data.user?.user_metadata || {}));
+                localStorage.setItem('userEmail', data.user?.email || email.trim());
                 onLogin(data.user?.id || '00000000-0000-0000-0000-000000000000');
             } else {
                 if (email === 'admin' && password === 'admin123') {
                     setError('');
+                    localStorage.setItem('userMetadata', JSON.stringify({}));
+                    localStorage.setItem('userEmail', 'admin@namesa.app');
                     onLogin('00000000-0000-0000-0000-000000000000');
                 } else {
                     setError('E-mail ou senha incorretos.');
@@ -127,6 +133,8 @@ const LoginScreen = ({ onLogin }) => {
         } catch (e) {
             if (email === 'admin' && password === 'admin123') {
                 setError('');
+                localStorage.setItem('userMetadata', JSON.stringify({}));
+                localStorage.setItem('userEmail', 'admin@namesa.app');
                 onLogin('00000000-0000-0000-0000-000000000000');
             } else {
                 setError('Erro ao conectar com o servidor.');
@@ -412,16 +420,18 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
 };
 
 const ItemCard = ({ item, onAdd }) => (
-    <div className="bg-[#121212] border border-[#2a2a2a] rounded-lg p-3 flex gap-4 items-center mb-3">
-        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-md object-cover border border-[#2a2a2a]" />
-        <div className="flex-1">
-            <h3 className="font-semibold text-[#f5f5f5]">{item.name}</h3>
-            <p className="text-xs text-[#a0a0a0] mt-1 line-clamp-2">{item.description}</p>
-            <p className="font-medium text-[#c4a47c] mt-1">{formatPrice(item.price)}</p>
+    <div className="bg-[#121212] border border-[#2a2a2a] rounded-lg mb-4 overflow-hidden shadow-lg">
+        <img src={item.image} alt={item.name} className="w-full h-40 object-cover" />
+        <div className="p-4 flex justify-between items-center gap-4">
+            <div className="flex-1">
+                <h3 className="font-semibold text-[#f5f5f5]">{item.name}</h3>
+                <p className="text-xs text-[#a0a0a0] mt-1 line-clamp-2">{item.description}</p>
+                <p className="font-medium text-[#c4a47c] mt-1">{formatPrice(item.price)}</p>
+            </div>
+            <button onClick={() => onAdd(item)} className="bg-[#1e1e1e] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2.5 rounded-full border border-[#2a2a2a] transition-colors shrink-0">
+                <Plus size={20} />
+            </button>
         </div>
-        <button onClick={() => onAdd(item)} className="bg-[#1e1e1e] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2 rounded-full border border-[#2a2a2a] transition-colors">
-            <Plus size={20} />
-        </button>
     </div>
 );
 
@@ -787,7 +797,8 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                     body: JSON.stringify({
                         nome: item.name,
                         descricao: item.description,
-                        preco: parseFloat(item.price) || 0
+                        preco: parseFloat(item.price) || 0,
+                        imagem_url: item.image
                     })
                 });
             }
@@ -800,7 +811,7 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
         if (!newItemName || !selectedCategoryId) return;
         setIsAdding(true);
         try {
-            const finalImage = newItemImage || `https://placehold.co/100x100/121212/c4a47c?text=${newItemName.substring(0,2).toUpperCase()}`;
+            const finalImage = newItemImage || `https://placehold.co/150x100/121212/c4a47c?text=${newItemName.substring(0,2).toUpperCase()}`;
             const res = await fetch(`${supabaseUrl}/rest/v1/itens_cardapio`, {
                 method: 'POST',
                 headers: supabaseHeaders,
@@ -853,10 +864,11 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                     <div className="space-y-4">
                         {category.items.map((item, iIdx) => (
                             <div key={item.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-[#121212] p-4 rounded-lg border border-[#2a2a2a]">
-                                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-md object-cover border border-[#2a2a2a]" />
+                                <img src={item.image} alt={item.name} className="w-24 h-16 rounded-md object-cover border border-[#2a2a2a]" />
                                 <div className="flex-1 w-full space-y-2">
                                     <input type="text" value={item.name} onChange={(e) => handleItemChange(cIdx, iIdx, 'name', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#f5f5f5] font-semibold focus:outline-none focus:border-[#c4a47c] px-1" />
                                     <input type="text" value={item.description} onChange={(e) => handleItemChange(cIdx, iIdx, 'description', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" />
+                                    <input type="text" value={item.image} onChange={(e) => handleItemChange(cIdx, iIdx, 'image', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" placeholder="URL da Foto" />
                                 </div>
                                 <div className="w-full sm:w-24">
                                     <input type="number" value={item.price} onChange={(e) => handleItemChange(cIdx, iIdx, 'price', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#c4a47c] p-2 focus:outline-none focus:border-[#c4a47c]" />
@@ -871,11 +883,8 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
             <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a] mt-6">
                 <h3 className="text-lg font-bold text-[#c4a47c] mb-4">Adicionar Novo Item</h3>
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="w-full sm:w-24">
-                        <div className="relative h-[42px] w-full bg-[#121212] border border-[#2a2a2a] rounded-lg flex items-center justify-center overflow-hidden cursor-pointer">
-                            {newItemImage ? <img src={newItemImage} className="w-full h-full object-cover" /> : <ImagePlus className="text-[#a0a0a0]" size={20} />}
-                            <input type="file" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
-                        </div>
+                    <div className="flex-1 w-full">
+                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="URL da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
                     </div>
                     <div className="flex-1 w-full">
                         <select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg">
@@ -885,6 +894,9 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                     </div>
                     <div className="flex-1 w-full">
                         <input type="text" value={newItemName} onChange={e => setNewItemName(e.target.value)} placeholder="Nome" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
+                    </div>
+                    <div className="flex-1 w-full">
+                        <input type="text" value={newItemDesc} onChange={e => setNewItemDesc(e.target.value)} placeholder="Descrição" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
                     </div>
                     <div className="w-full sm:w-24">
                         <input type="number" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} placeholder="0.00" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#c4a47c] p-2.5 rounded-lg" />
@@ -1056,21 +1068,49 @@ const Financeiro = ({ userId }) => {
     );
 };
 
-const PerfilEditor = () => (
-    <div className="space-y-6 animate-in fade-in max-w-3xl">
-        <div className="border-b border-[#2a2a2a] pb-6">
-            <h2 className="text-xl font-serif text-[#f5f5f5]">Perfil do Estabelecimento</h2>
-            <p className="text-[#a0a0a0] text-sm">Gerencie as informações do seu negócio.</p>
-        </div>
-        <div className="bg-[#1e1e1e] p-6 rounded-xl border border-[#2a2a2a] shadow-lg space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Store size={14}/> Nome do Estabelecimento</label><input type="text" defaultValue="NaMesa Bar & Coquetelaria" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
-                <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><MapPin size={14}/> Endereço</label><input type="text" defaultValue="Rua das Flores, 123" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
+const PerfilEditor = () => {
+    const [profile, setProfile] = useState({
+        restaurantName: '',
+        address: '',
+        ownerName: '',
+        cpf: '',
+        email: ''
+    });
+
+    useEffect(() => {
+        const metaStr = localStorage.getItem('userMetadata');
+        const emailStr = localStorage.getItem('userEmail');
+        let meta = {};
+        try { meta = metaStr ? JSON.parse(metaStr) : {}; } catch(e) {}
+        
+        setProfile({
+            restaurantName: meta.restaurantName || 'NaMesa Bar & Coquetelaria',
+            address: meta.address || 'Rua das Flores, 123',
+            ownerName: meta.ownerName || 'Admin',
+            cpf: meta.cpf || '000.000.000-00',
+            email: emailStr || 'admin@namesa.app'
+        });
+    }, []);
+
+    return (
+        <div className="space-y-6 animate-in fade-in max-w-3xl">
+            <div className="border-b border-[#2a2a2a] pb-6">
+                <h2 className="text-xl font-serif text-[#f5f5f5]">Perfil do Estabelecimento</h2>
+                <p className="text-[#a0a0a0] text-sm">Gerencie as informações do seu negócio.</p>
             </div>
-            <div className="flex justify-end pt-4"><button className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors"><Save size={20}/> Salvar Perfil</button></div>
+            <div className="bg-[#1e1e1e] p-6 rounded-xl border border-[#2a2a2a] shadow-lg space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Store size={14}/> Nome do Estabelecimento</label><input type="text" value={profile.restaurantName} onChange={e => setProfile({...profile, restaurantName: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
+                    <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><MapPin size={14}/> Endereço</label><input type="text" value={profile.address} onChange={e => setProfile({...profile, address: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
+                    <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><User size={14}/> Nome do proprietário</label><input type="text" value={profile.ownerName} onChange={e => setProfile({...profile, ownerName: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
+                    <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Lock size={14}/> CPF</label><input type="text" value={profile.cpf} onChange={e => setProfile({...profile, cpf: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
+                    <div className="md:col-span-2"><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Mail size={14}/> E-mail</label><input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none opacity-70 cursor-not-allowed" disabled title="O e-mail não pode ser alterado por aqui" /></div>
+                </div>
+                <div className="flex justify-end pt-4"><button className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors"><Save size={20}/> Salvar Perfil</button></div>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const Dashboard = ({ onLogout, userId }) => {
     const [activeTab, setActiveTab] = useState('pedidos');
@@ -1141,7 +1181,7 @@ const Dashboard = ({ onLogout, userId }) => {
                         category: c.nome,
                         items: itens.filter(i => i.categoria_id === c.id).map(i => ({
                             id: i.id, name: i.nome, description: i.descricao, price: i.preco,
-                            image: i.imagem_url || `https://placehold.co/100x100/121212/c4a47c?text=${i.nome.substring(0,2)}`
+                            image: i.imagem_url || `https://placehold.co/150x100/121212/c4a47c?text=${i.nome.substring(0,2)}`
                         }))
                     })));
                 }
@@ -1217,7 +1257,7 @@ const Dashboard = ({ onLogout, userId }) => {
     };
 
     return (
-        <div className="h-screen flex flex-col md:flex-row bg-[#0a0a0a] text-[#f5f5f5] overflow-hidden font-sans">
+        <div className="h-screen flex flex-row bg-[#0a0a0a] text-[#f5f5f5] overflow-hidden font-sans">
             {notification && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-gradient-to-r from-[#c4a47c] to-[#d4b48c] text-[#121212] px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(196,164,124,0.4)] flex items-center gap-4 animate-in slide-in-from-top-10 duration-500 border border-[#d4b48c]/50">
                     <div className="bg-[#121212] p-2 rounded-full">
@@ -1233,29 +1273,33 @@ const Dashboard = ({ onLogout, userId }) => {
                 </div>
             )}
             
-            <nav className={`bg-[#1e1e1e] border-b md:border-b-0 md:border-r border-[#2a2a2a] transition-all duration-300 relative z-20 ${isSidebarOpen ? 'w-full md:w-64' : 'w-full md:w-20'} flex flex-row md:flex-col items-center md:items-stretch`}>
-                <div className={`p-4 md:p-6 border-r md:border-r-0 md:border-b border-[#2a2a2a] h-16 md:h-20 flex items-center ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}>
+            {isSidebarOpen && (
+                <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>
+            )}
+
+            <nav className={`bg-[#1e1e1e] border-r border-[#2a2a2a] transition-all duration-300 flex flex-col items-stretch shrink-0 ${isSidebarOpen ? 'absolute md:relative w-64 h-full z-30' : 'relative w-16 md:w-20 z-20'}`}>
+                <div className={`p-4 md:p-6 border-b border-[#2a2a2a] h-16 md:h-20 flex items-center ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}>
                     <h1 className="text-xl md:text-2xl font-serif text-[#c4a47c] tracking-wide">{isSidebarOpen ? 'NaMesa' : 'N'}</h1>
                 </div>
-                <div className="flex-1 flex flex-row md:flex-col py-2 md:py-6 space-x-2 md:space-x-0 md:space-y-2 px-3 overflow-x-auto md:overflow-y-auto no-scrollbar">
+                <div className="flex-1 flex flex-col py-4 md:py-6 space-y-2 px-2 md:px-3 overflow-y-auto no-scrollbar">
                     {TABS.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
                         return (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center rounded-xl transition-all duration-200 shrink-0 md:w-full ${isSidebarOpen ? 'px-4 py-2 md:py-3 gap-3 md:gap-4' : 'justify-center p-3'} ${isActive ? 'bg-[#c4a47c]/10 text-[#c4a47c]' : 'text-[#a0a0a0] hover:bg-[#121212] hover:text-[#f5f5f5]'}`}>
-                                <Icon size={20} className="md:w-[22px] md:h-[22px]" />
-                                {isSidebarOpen && <span className="text-xs md:text-sm font-medium whitespace-nowrap">{tab.label}</span>}
+                            <button key={tab.id} onClick={() => { setActiveTab(tab.id); if(window.innerWidth < 768) setIsSidebarOpen(false); }} className={`flex items-center rounded-xl transition-all duration-200 shrink-0 w-full ${isSidebarOpen ? 'px-4 py-3 gap-4' : 'justify-center p-3'} ${isActive ? 'bg-[#c4a47c]/10 text-[#c4a47c]' : 'text-[#a0a0a0] hover:bg-[#121212] hover:text-[#f5f5f5]'}`}>
+                                <Icon size={20} className="md:w-[22px] md:h-[22px] shrink-0" />
+                                {isSidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{tab.label}</span>}
                             </button>
                         );
                     })}
                 </div>
-                <div className="p-2 md:p-4 border-l md:border-l-0 md:border-t border-[#2a2a2a]">
-                    <button onClick={onLogout} className={`flex items-center rounded-xl text-[#8b0000] hover:bg-[#8b0000]/10 transition-colors ${isSidebarOpen ? 'px-4 py-2 md:py-3 gap-3' : 'justify-center p-3'}`}>
-                        <LogOut size={20} />
-                        {isSidebarOpen && <span className="text-xs md:text-sm font-bold whitespace-nowrap">Sair</span>}
+                <div className="p-2 md:p-4 border-t border-[#2a2a2a]">
+                    <button onClick={onLogout} className={`flex items-center rounded-xl text-[#8b0000] hover:bg-[#8b0000]/10 transition-colors w-full ${isSidebarOpen ? 'px-4 py-3 gap-3' : 'justify-center p-3'}`}>
+                        <LogOut size={20} className="shrink-0" />
+                        {isSidebarOpen && <span className="text-sm font-bold whitespace-nowrap">Sair</span>}
                     </button>
                 </div>
-                <button onClick={toggleSidebar} className="absolute hidden md:block top-1/2 -right-3 -translate-y-1/2 bg-[#1e1e1e] border border-[#2a2a2a] rounded-full p-1 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors z-30">
+                <button onClick={toggleSidebar} className="absolute top-1/2 -right-3 -translate-y-1/2 bg-[#1e1e1e] border border-[#2a2a2a] rounded-full p-1 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors z-40">
                     {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
                 </button>
             </nav>
