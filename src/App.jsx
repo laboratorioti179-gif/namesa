@@ -21,7 +21,7 @@ const formatPrice = (price) => Number(price).toLocaleString('pt-BR', { style: 'c
 
 const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTUwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzEyMTIxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iYXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjNGE0N2MiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNFTSBGT1RPPC90ZXh0Pjwvc3ZnPg==';
 
-// Gráfico de Pizza Customizado (Substituindo Recharts para evitar erro de build)
+// Custom Pie Chart Component
 const SimplePieChart = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     let cumulativePercent = 0;
@@ -381,7 +381,7 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
                     onClick={onClearHistory}
                     className="text-xs font-medium text-[#a0a0a0] hover:text-red-500 flex items-center gap-2 transition-colors border border-[#2a2a2a] px-3 py-1.5 rounded-lg hover:border-red-500/30"
                 >
-                    <Trash2 size={14} /> Limpar Concluídos/Recusados
+                    <Trash2 size={14} /> Limpar Pedidos
                 </button>
             </div>
             
@@ -455,7 +455,7 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
 };
 
 const ItemCard = ({ item, onAdd }) => (
-    <div className="bg-[#121212] border border-[#2a2a2a] rounded-lg mb-4 overflow-hidden shadow-lg">
+    <div className="bg-[#000000] border border-[#2a2a2a] rounded-lg mb-4 overflow-hidden shadow-lg">
         <img 
             src={item.image || fallbackImage} 
             alt={item.name} 
@@ -468,7 +468,7 @@ const ItemCard = ({ item, onAdd }) => (
                 <p className="text-xs text-[#a0a0a0] mt-1 line-clamp-2">{item.description}</p>
                 <p className="font-medium text-[#c4a47c] mt-1">{formatPrice(item.price)}</p>
             </div>
-            <button onClick={() => onAdd(item)} className="bg-[#1e1e1e] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2.5 rounded-full border border-[#2a2a2a] transition-colors shrink-0">
+            <button onClick={() => onAdd(item)} className="bg-[#000000] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2.5 rounded-full border border-[#2a2a2a] transition-colors shrink-0">
                 <Plus size={20} />
             </button>
         </div>
@@ -597,20 +597,20 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const isCheckoutValid = nomeCliente.trim() !== '' && mesaCliente.trim() !== '';
 
     return (
-        <div className="w-full h-full bg-[#121212] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
-            <header className="bg-[#1e1e1e] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
+        <div className="w-full h-full bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
+            <header className="bg-[#000000] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
                 </button>
                 <h2 className="font-serif text-lg text-[#f5f5f5] flex-1 text-center pr-8">Cardápio NaMesa</h2>
             </header>
 
-            <div className="flex overflow-x-auto gap-2 p-3 bg-[#1e1e1e] border-b border-[#2a2a2a] shrink-0 no-scrollbar">
+            <div className="flex overflow-x-auto gap-2 p-3 bg-[#000000] border-b border-[#2a2a2a] shrink-0 no-scrollbar">
                 {menuData.map(cat => (
                     <button
                         key={cat.categoryId}
                         onClick={() => setActiveCategory(cat.category)}
-                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition-colors ${activeCategory === cat.category ? 'bg-[#c4a47c] text-[#121212] font-bold' : 'bg-[#121212] text-[#a0a0a0] border border-[#2a2a2a]'}`}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition-colors ${activeCategory === cat.category ? 'bg-[#c4a47c] text-[#121212] font-bold' : 'bg-[#000000] text-[#a0a0a0] border border-[#2a2a2a]'}`}
                     >
                         {cat.category}
                     </button>
@@ -628,7 +628,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#121212] via-[#121212] to-transparent animate-in slide-in-from-bottom">
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom">
                     <button 
                         onClick={() => setIsCartOpen(true)}
                         className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all"
@@ -644,7 +644,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 
             {isCartOpen && (
                 <div className="absolute inset-0 z-50 bg-black/80 flex flex-col justify-end">
-                    <div className="bg-[#1e1e1e] w-full h-[85%] rounded-t-2xl flex flex-col border-t border-[#2a2a2a] animate-in slide-in-from-bottom">
+                    <div className="bg-[#000000] w-full h-[85%] rounded-t-2xl flex flex-col border-t border-[#2a2a2a] animate-in slide-in-from-bottom">
                         <div className="p-4 border-b border-[#2a2a2a] flex justify-between items-center">
                             <h3 className="text-lg font-bold text-[#c4a47c]">Seu Carrinho</h3>
                             <button onClick={() => setIsCartOpen(false)} className="text-[#a0a0a0] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors"><X size={20} /></button>
@@ -653,14 +653,14 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                         <div className="p-4 space-y-4 border-b border-[#2a2a2a]">
                             <div>
                                 <label className="block text-sm text-[#a0a0a0] mb-1">Nome</label>
-                                <input type="text" value={nomeCliente} onChange={e => setNomeCliente(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] rounded-lg p-2.5 text-[#f5f5f5] outline-none focus:border-[#c4a47c]" placeholder="Ex: João Silva" />
+                                <input type="text" value={nomeCliente} onChange={e => setNomeCliente(e.target.value)} className="w-full bg-[#000000] border border-[#2a2a2a] rounded-lg p-2.5 text-[#f5f5f5] outline-none focus:border-[#c4a47c]" placeholder="Ex: João Silva" />
                             </div>
                             <div>
                                 <label className="block text-sm text-[#a0a0a0] mb-1">Número da Mesa</label>
                                 <select 
                                     value={mesaCliente} 
                                     onChange={e => setMesaCliente(e.target.value)} 
-                                    className="w-full bg-[#121212] border border-[#2a2a2a] rounded-lg p-2.5 text-[#f5f5f5] outline-none focus:border-[#c4a47c]"
+                                    className="w-full bg-[#000000] border border-[#2a2a2a] rounded-lg p-2.5 text-[#f5f5f5] outline-none focus:border-[#c4a47c]"
                                 >
                                     <option value="">Selecione a mesa</option>
                                     {Array.from({ length: 100 }, (_, i) => (
@@ -672,12 +672,12 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 
                         <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
                             {cart.map(item => (
-                                <div key={item.id} className="flex justify-between items-center mb-4 bg-[#121212] p-3 rounded-lg border border-[#2a2a2a]">
+                                <div key={item.id} className="flex justify-between items-center mb-4 bg-[#000000] p-3 rounded-lg border border-[#2a2a2a]">
                                     <div>
                                         <p className="font-medium text-[#f5f5f5] text-sm">{item.name}</p>
                                         <p className="text-[#c4a47c] text-xs">{formatPrice(item.price)}</p>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-[#1e1e1e] rounded-full border border-[#2a2a2a] px-2 py-1">
+                                    <div className="flex items-center gap-3 bg-[#000000] rounded-full border border-[#2a2a2a] px-2 py-1">
                                         <button onClick={() => updateQuantity(item.id, -1)} className="text-[#a0a0a0] hover:text-[#f5f5f5]"><Minus size={14} /></button>
                                         <span className="text-sm w-4 text-center font-medium">{item.quantity}</span>
                                         <button onClick={() => updateQuantity(item.id, 1)} className="text-[#c4a47c] hover:text-[#d4b48c]"><Plus size={14} /></button>
@@ -686,7 +686,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             ))}
                         </div>
                         
-                        <div className="p-4 pb-8 sm:pb-4 bg-[#121212] border-t border-[#2a2a2a]">
+                        <div className="p-4 pb-8 sm:pb-4 bg-[#000000] border-t border-[#2a2a2a]">
                             <div className="flex justify-between items-center mb-4 text-[#f5f5f5]">
                                 <span>Total do Pedido</span>
                                 <span className="font-bold text-xl text-[#c4a47c]">{formatPrice(cartTotal)}</span>
@@ -732,7 +732,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
         const clientLink = `${baseUrl}?kiosque=${userId}`;
         const qrData = encodeURIComponent(clientLink);
         
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}&color=ea580c`;
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}&color=000000`;
         
         img.onload = () => {
             ctx.drawImage(img, (canvas.width - 250) / 2, 120, 250, 250);
@@ -793,7 +793,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
                     <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
                     <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
                     <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inputUrl.trim().replace(/\/$/, '') + '?kiosque=' + userId)}&color=ea580c`} 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inputUrl.trim().replace(/\/$/, '') + '?kiosque=' + userId)}&color=000000`} 
                         alt="QR Code" 
                         className="w-[250px] h-[250px]" 
                     />
