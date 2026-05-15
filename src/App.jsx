@@ -674,16 +674,24 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 };
 
 const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
-    const [baseUrl, setBaseUrl] = useState('https://namesa.app/menu');
+    const baseUrl = `https://namesa.app/menu?id=${userId}`;
     const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
+    const [restaurantName, setRestaurantName] = useState('NaMesa');
+
+    useEffect(() => {
+        try {
+            const meta = JSON.parse(localStorage.getItem('userMetadata') || '{}');
+            if (meta.restaurantName) setRestaurantName(meta.restaurantName);
+        } catch (e) {}
+    }, []);
 
     const handleDownload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 400; canvas.height = 450;
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#000000'; ctx.font = 'bold 32px "Playfair Display", serif'; ctx.textAlign = 'center'; ctx.fillText("NaMesa", canvas.width / 2, 60);
-        ctx.font = '16px "Inter", sans-serif'; ctx.fillStyle = '#333333'; ctx.fillText("Escaneie para pedir", canvas.width / 2, 90);
+        ctx.fillStyle = '#000000'; ctx.font = '32px "Berkshire Swash", cursive'; ctx.textAlign = 'center'; ctx.fillText(restaurantName, canvas.width / 2, 60);
+        ctx.font = '16px "Inter", sans-serif'; ctx.fillStyle = '#333333'; ctx.fillText("Peça sem sair da mesa!", canvas.width / 2, 90);
 
         const img = new Image();
         img.crossOrigin = 'Anonymous';
@@ -692,7 +700,6 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
         
         img.onload = () => {
             ctx.drawImage(img, (canvas.width - 250) / 2, 120, 250, 250);
-            ctx.font = '14px "Inter", sans-serif'; ctx.fillStyle = '#666666'; ctx.fillText("namesa.app", canvas.width / 2, 410);
 
             const downloadPdf = () => {
                 const { jsPDF } = window.jspdf;
@@ -733,14 +740,11 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
                 </div>
             </div>
             
-            <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
-                <label className="block text-sm text-[#a0a0a0] mb-2">URL Base do Cardápio</label>
-                <input type="text" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:outline-none focus:border-[#c4a47c] transition-colors" placeholder="ex: https://namesa.app/menu" />
-            </div>
-
             <div className="flex justify-center py-8">
-                <div className="bg-white p-6 rounded-xl border-4 border-[#1e1e1e] inline-block shadow-2xl">
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(baseUrl)}&color=171717`} alt="QR Code" />
+                <div className="bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center p-8 w-full max-w-[400px] h-[450px] relative border border-[#2a2a2a] overflow-hidden">
+                    <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
+                    <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(baseUrl)}&color=171717`} alt="QR Code" className="w-[250px] h-[250px]" />
                 </div>
             </div>
             
@@ -1030,13 +1034,13 @@ const Financeiro = ({ userId }) => {
     const cores = ['#c4a47c', '#8b949e', '#58a6ff', '#8b0000', '#2ea043'];
 
     const categoryColorMap = {
-        'Drinks': '#c4a47c',    // Dourado
-        'Porções': '#8b949e',   // Cinza Chumbo
-        'Cervejas': '#58a6ff',  // Azul
-        'Cerveja': '#58a6ff',   // Azul (fallback singular)
-        'Insumos': '#8b0000',   // Vermelho Escuro
-        'Operacional': '#2ea043', // Verde
-        'Venda': '#c4a47c'      // Dourado (Receitas)
+        'Lanches': '#c4a47c',    // Dourado
+        'Pratos': '#8b949e',     // Cinza Chumbo
+        'Diversão': '#58a6ff',   // Azul
+        'Outros': '#d4b48c',     // Dourado Claro
+        'Insumos': '#8b0000',    // Vermelho Escuro
+        'Operacional': '#2ea043',// Verde
+        'Venda': '#c4a47c'       // Dourado (Receitas)
     };
 
     return (
@@ -1461,7 +1465,7 @@ export default function App() {
         document.head.appendChild(manifestLink);
 
         const link = document.createElement('link');
-        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap';
+        link.href = 'https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap';
         link.rel = 'stylesheet';
         document.head.appendChild(link);
     }, []);
