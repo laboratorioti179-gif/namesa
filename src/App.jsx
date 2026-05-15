@@ -595,7 +595,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#121212] via-[#121212] to-transparent animate-in slide-in-from-bottom">
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#121212] via-[#121212] to-transparent animate-in slide-in-from-bottom">
                     <button 
                         onClick={() => setIsCartOpen(true)}
                         className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all"
@@ -653,7 +653,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             ))}
                         </div>
                         
-                        <div className="p-4 bg-[#121212] border-t border-[#2a2a2a]">
+                        <div className="p-4 pb-8 sm:pb-4 bg-[#121212] border-t border-[#2a2a2a]">
                             <div className="flex justify-between items-center mb-4 text-[#f5f5f5]">
                                 <span>Total do Pedido</span>
                                 <span className="font-bold text-xl text-[#c4a47c]">{formatPrice(cartTotal)}</span>
@@ -749,7 +749,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
             </div>
             
             {isSimuladorOpen && (
-                <div className="fixed inset-0 z-50 flex justify-end bg-black/80 backdrop-blur-sm transition-opacity">
+                <div className="fixed inset-0 z-[100] flex justify-end bg-black/80 backdrop-blur-sm transition-opacity">
                     <div className="w-full sm:w-[400px] h-full relative">
                         <SimuladorCliente onBack={() => setIsSimuladorOpen(false)} onAddPedido={onAddPedido} menuData={menuData} userId={userId} />
                     </div>
@@ -1364,7 +1364,7 @@ const Dashboard = ({ onLogout, userId }) => {
                 </button>
             </nav>
 
-            <main className="flex-1 p-4 md:p-10 overflow-y-auto relative z-10 no-scrollbar pb-safe-area">
+            <main className="flex-1 p-4 md:p-10 overflow-y-auto no-scrollbar pb-safe-area">
                 <div className="max-w-full lg:max-w-6xl mx-auto pb-24 md:pb-20">
                     {activeTab === 'pedidos' && <PedidosList pedidos={pedidos} onUpdateStatus={handleUpdateStatus} onClearHistory={handleClearHistory} />}
                     {activeTab === 'cardapio' && <CardapioEditor menuData={menuData} setMenuData={setMenuData} userId={userId} />}
