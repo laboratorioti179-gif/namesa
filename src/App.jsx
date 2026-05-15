@@ -24,17 +24,113 @@ const supabaseHeaders = {
 const formatPrice = (price) => Number(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 const LoginScreen = ({ onLogin }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
+    const [restaurantName, setRestaurantName] = useState('');
+    const [address, setAddress] = useState('');
+    const [ownerName, setOwnerName] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (username === 'admin' && password === 'admin123') {
-            setError('');
-            onLogin();
-        } else {
-            setError('Usuário ou senha incorretos.');
+        if (isResettingPassword) {
+            if (!email) {
+                setError('Preencha seu e-mail para recuperar a senha.');
+                return;
+            }
+            try {
+                const res = await fetch(`${supabaseUrl}/auth/v1/recover`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email.trim() })
+                });
+                if (res.ok) {
+                    setError('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+                    setIsResettingPassword(false);
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    setError(data.msg || data.message || 'Erro ao enviar e-mail de recuperação.');
+                }
+            } catch (e) {
+                setError('Erro de conexão ao recuperar senha.');
+            }
+            return;
+        }
+        if (isRegistering) {
+            if (email && password && restaurantName && address && ownerName && cpf && confirmPassword) {
+                if (password !== confirmPassword) {
+                    setError('As senhas não coincidem.');
+                    return;
+                }
+                try {
+                    const res = await fetch(`${supabaseUrl}/auth/v1/signup`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': supabaseKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            email, 
+                            password,
+                            data: {
+                                restaurantName,
+                                address,
+                                ownerName,
+                                cpf
+                            }
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        setError(data.msg || data.message || 'Erro ao criar conta. Verifique os dados informados.');
+                    } else {
+                        setError('');
+                        onLogin(data.user?.id || '00000000-0000-0000-0000-000000000000');
+                    }
+                } catch (e) {
+                    setError('Erro de conexão ao criar conta.');
+                }
+            } else {
+                setError('Preencha todos os campos para criar a conta.');
+            }
+            return;
+        }
+        
+        try {
+            const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+                method: 'POST',
+                headers: {
+                    'apikey': supabaseKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email.trim(), password })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setError('');
+                onLogin(data.user?.id || '00000000-0000-0000-0000-000000000000');
+            } else {
+                if (email === 'admin' && password === 'admin123') {
+                    setError('');
+                    onLogin('00000000-0000-0000-0000-000000000000');
+                } else {
+                    setError('E-mail ou senha incorretos.');
+                }
+            }
+        } catch (e) {
+            if (email === 'admin' && password === 'admin123') {
+                setError('');
+                onLogin('00000000-0000-0000-0000-000000000000');
+            } else {
+                setError('Erro ao conectar com o servidor.');
+            }
         }
     };
 
@@ -49,12 +145,12 @@ const LoginScreen = ({ onLogin }) => {
                 <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/50 via-[#121212]/80 to-[#121212]"></div>
             </div>
 
-            <form onSubmit={handleSubmit} className="relative z-10 bg-[#1e1e1e]/90 backdrop-blur-md p-8 rounded-2xl w-full max-w-md border border-[#2a2a2a] shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+            <form onSubmit={handleSubmit} className="relative z-10 bg-[#1e1e1e]/90 backdrop-blur-md p-8 rounded-2xl w-full max-w-md border border-[#2a2a2a] shadow-2xl animate-in fade-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-[#c4a47c]/50 to-transparent"></div>
                 
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-serif text-[#c4a47c] mb-2 tracking-wide">NaMesa</h1>
-                    <p className="text-[#a0a0a0] text-xs uppercase tracking-[0.2em]">Acesso Restrito</p>
+                    <p className="text-[#a0a0a0] text-xs uppercase tracking-[0.2em]">{isResettingPassword ? 'Recuperar Senha' : (isRegistering ? 'Criar Nova Conta' : 'Acesso Restrito')}</p>
                 </div>
 
                 {error && (
@@ -63,38 +159,139 @@ const LoginScreen = ({ onLogin }) => {
                     </div>
                 )}
 
-                <div className="space-y-5">
+                <div className="space-y-4">
+                    {!isResettingPassword && isRegistering && (
+                        <>
+                            <div>
+                                <label className="block mb-2 text-sm text-[#a0a0a0]">Nome do Restaurante</label>
+                                <div className="relative group">
+                                    <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                    <input 
+                                        type="text" 
+                                        value={restaurantName} 
+                                        onChange={(e) => setRestaurantName(e.target.value)}
+                                        className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                        placeholder="Nome do Restaurante"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm text-[#a0a0a0]">Endereço</label>
+                                <div className="relative group">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                    <input 
+                                        type="text" 
+                                        value={address} 
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                        placeholder="Endereço completo"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm text-[#a0a0a0]">Nome do proprietário</label>
+                                <div className="relative group">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                    <input 
+                                        type="text" 
+                                        value={ownerName} 
+                                        onChange={(e) => setOwnerName(e.target.value)}
+                                        className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                        placeholder="Nome do proprietário"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm text-[#a0a0a0]">CPF</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                    <input 
+                                        type="text" 
+                                        value={cpf} 
+                                        onChange={(e) => setCpf(e.target.value)}
+                                        className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                        placeholder="000.000.000-00"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    )}
                     <div>
-                        <label className="block mb-2 text-sm text-[#a0a0a0]">Usuário</label>
+                        <label className="block mb-2 text-sm text-[#a0a0a0]">E-mail</label>
                         <div className="relative group">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
                             <input 
                                 type="text" 
-                                value={username} 
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
-                                placeholder="Digite o usuário"
+                                placeholder="Digite seu e-mail"
                             />
                         </div>
                     </div>
-                    <div>
-                        <label className="block mb-2 text-sm text-[#a0a0a0]">Senha</label>
-                        <div className="relative group">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
-                            <input 
-                                type="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
-                                placeholder="••••••••"
-                            />
-                        </div>
-                    </div>
+                    {!isResettingPassword && (
+                        <>
+                            <div>
+                                <label className="block mb-2 text-sm text-[#a0a0a0]">Senha</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                    <input 
+                                        type="password" 
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                            </div>
+                            {isRegistering && (
+                                <div>
+                                    <label className="block mb-2 text-sm text-[#a0a0a0]">Confirmação de senha</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0] group-focus-within:text-[#c4a47c] transition-colors" size={18} />
+                                        <input 
+                                            type="password" 
+                                            value={confirmPassword} 
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="w-full bg-[#121212] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-3 text-[#f5f5f5] outline-none focus:border-[#c4a47c] focus:ring-1 focus:ring-[#c4a47c] transition-all" 
+                                            placeholder="••••••••"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
 
                 <button type="submit" className="w-full bg-gradient-to-r from-[#c4a47c] to-[#d4b48c] hover:from-[#d4b48c] hover:to-[#c4a47c] text-[#121212] font-bold py-3.5 rounded-xl transition-all mt-8 shadow-[0_0_15px_rgba(196,164,124,0.2)] hover:shadow-[0_0_25px_rgba(196,164,124,0.4)] active:scale-[0.98]">
-                    Entrar no Sistema
+                    {isResettingPassword ? 'Enviar E-mail' : (isRegistering ? 'Criar Conta' : 'Entrar no Sistema')}
                 </button>
+
+                <div className="mt-4 text-center flex flex-col gap-3">
+                    <button 
+                        type="button" 
+                        onClick={() => { 
+                            if (isResettingPassword) {
+                                setIsResettingPassword(false);
+                            } else {
+                                setIsRegistering(!isRegistering); 
+                            }
+                            setError(''); 
+                        }} 
+                        className="text-xs text-[#c4a47c] hover:text-[#d4b48c] transition-colors font-medium"
+                    >
+                        {isResettingPassword ? 'Voltar ao login' : (isRegistering ? 'Já tenho uma conta. Fazer login' : 'Não tem uma conta? Criar conta')}
+                    </button>
+                    {!isRegistering && !isResettingPassword && (
+                        <button 
+                            type="button" 
+                            onClick={() => { setIsResettingPassword(true); setError(''); }} 
+                            className="text-xs text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors"
+                        >
+                            Esqueci minha senha
+                        </button>
+                    )}
+                </div>
 
                 <div className="mt-6 text-center text-xs text-[#a0a0a0] border-t border-[#2a2a2a] pt-4">
                     Credenciais de teste:<br/>Usuário: <span className="text-[#f5f5f5]">admin</span> / Senha: <span className="text-[#f5f5f5]">admin123</span>
@@ -872,7 +1069,7 @@ const PerfilEditor = () => (
     </div>
 );
 
-const Dashboard = ({ onLogout }) => {
+const Dashboard = ({ onLogout, userId }) => {
     const [activeTab, setActiveTab] = useState('pedidos');
     const [pedidos, setPedidos] = useState([]);
     const [menuData, setMenuData] = useState([]);
@@ -1081,13 +1278,13 @@ const Dashboard = ({ onLogout }) => {
             <main className="flex-1 p-4 md:p-10 overflow-y-auto relative z-10 no-scrollbar pb-safe-area">
                 <div className="max-w-full lg:max-w-6xl mx-auto pb-24 md:pb-20">
                     {activeTab === 'pedidos' && <PedidosList pedidos={pedidos} onUpdateStatus={handleUpdateStatus} onClearHistory={handleClearHistory} />}
-                    {activeTab === 'cardapio' && <CardapioEditor menuData={menuData} setMenuData={setMenuData} />}
-                    {activeTab === 'financeiro' && <Financeiro />}
-                    {activeTab === 'qrcode' && <QRCodeGenerator onSimulate={() => setActiveTab('simulador')} menuData={menuData} onAddPedido={handleNovoPedido} />}
+                    {activeTab === 'cardapio' && <CardapioEditor menuData={menuData} setMenuData={setMenuData} userId={userId} />}
+                    {activeTab === 'financeiro' && <Financeiro userId={userId} />}
+                    {activeTab === 'qrcode' && <QRCodeGenerator onSimulate={() => setActiveTab('simulador')} menuData={menuData} onAddPedido={handleNovoPedido} userId={userId} />}
                     {activeTab === 'perfil' && <PerfilEditor />}
                     {activeTab === 'simulador' && (
                         <div className="max-w-[400px] mx-auto h-[80vh] bg-black rounded-2xl overflow-hidden border border-[#2a2a2a] shadow-2xl">
-                            <SimuladorCliente onBack={() => setActiveTab('qrcode')} onAddPedido={handleNovoPedido} menuData={menuData} />
+                            <SimuladorCliente onBack={() => setActiveTab('qrcode')} onAddPedido={handleNovoPedido} menuData={menuData} userId={userId} />
                         </div>
                     )}
                 </div>
@@ -1098,6 +1295,8 @@ const Dashboard = ({ onLogout }) => {
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null);
+
     useEffect(() => {
         const generateAppIcon = () => {
             const canvas = document.createElement('canvas');
@@ -1188,6 +1387,6 @@ export default function App() {
         document.head.appendChild(link);
     }, []);
 
-    if (!isLoggedIn) return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
-    return <Dashboard onLogout={() => setIsLoggedIn(false)} />;
+    if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
+    return <Dashboard onLogout={() => { setIsLoggedIn(false); setUserId(null); }} userId={userId} />;
 }
