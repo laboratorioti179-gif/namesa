@@ -336,8 +336,8 @@ const LoginScreen = ({ onLogin }) => {
                     )}
                 </div>
 
-                <div className="mt-6 text-center text-xs text-[#a0a0a0] border-t border-[#2a2a2a] pt-4">
-                    Credenciais de teste:<br/>Usuário: <span className="text-[#f5f5f5]">admin</span> / Senha: <span className="text-[#f5f5f5]">admin123</span>
+                <div className="mt-6 text-center text-[10px] text-[#c4a47c] italic border-t border-[#2a2a2a] pt-4 uppercase tracking-[0.15em] font-medium opacity-80">
+                    Sua gestão na palma da mão, o sucesso na mesa do cliente.
                 </div>
             </form>
         </div>
@@ -597,7 +597,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const isCheckoutValid = nomeCliente.trim() !== '' && mesaCliente.trim() !== '';
 
     return (
-        <div className="w-full h-full bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
+        <div className="w-full min-h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
             <header className="bg-[#000000] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
@@ -617,7 +617,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                 ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 pb-24">
+            <div className="flex-1 bg-[#000000] overflow-y-auto p-4 pb-24">
                 {menuData.map(category => (
                     <div key={category.categoryId} className={activeCategory === category.category ? 'block' : 'hidden'}>
                         {category.items.map(item => (
@@ -1561,8 +1561,8 @@ export default function App() {
     }, []);
 
     if (isClientView) {
-        if (loadingClient) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
-        return <SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} />;
+        if (loadingClient) return <div className="min-h-screen bg-[#000000] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
+        return <div className="min-h-screen bg-[#000000]"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
     }
 
     if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
