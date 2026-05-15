@@ -6,10 +6,6 @@ import {
     PieChart as PieChartIcon, BarChart3, ChevronLeft, ChevronRight, Save, MapPin, Store, Phone, Mail, Link as LinkIcon,
     ImagePlus, Trash2, Play, CheckCircle, DollarSign, Check, AlertCircle, BellRing, Camera
 } from 'lucide-react';
-import { 
-    PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
-    CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts';
 
 const supabaseUrl = 'https://immwiliotzbuejxffzyl.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltbXdpbGlvdHpidWVqeGZmenlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MTg4MzYsImV4cCI6MjA5NDI5NDgzNn0.XbvSGwkG_MkL9rHF9dxopaJJODAm1HUp27kvbNr60YI';
@@ -24,6 +20,43 @@ const supabaseHeaders = {
 const formatPrice = (price) => Number(price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTUwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzEyMTIxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iYXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjNGE0N2MiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNFTSBGT1RPPC90ZXh0Pjwvc3ZnPg==';
+
+// Gráfico de Pizza Customizado (Substituindo Recharts para evitar erro de build)
+const SimplePieChart = ({ data }) => {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    let cumulativePercent = 0;
+
+    function getCoordinatesForPercent(percent) {
+        const x = Math.cos(2 * Math.PI * percent);
+        const y = Math.sin(2 * Math.PI * percent);
+        return [x, y];
+    }
+
+    return (
+        <div className="relative w-full h-full flex items-center justify-center">
+            <svg viewBox="-1 -1 2 2" className="w-48 h-48 -rotate-90">
+                {data.map((item, index) => {
+                    const [startX, startY] = getCoordinatesForPercent(cumulativePercent);
+                    cumulativePercent += item.value / total;
+                    const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
+                    const largeArcFlag = item.value / total > 0.5 ? 1 : 0;
+                    const pathData = [
+                        `M ${startX} ${startY}`,
+                        `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                        `L 0 0`,
+                    ].join(' ');
+
+                    return <path key={index} d={pathData} fill={item.color} />;
+                })}
+                <circle r="0.6" fill="#1e1e1e" cx="0" cy="0" />
+            </svg>
+            <div className="absolute flex flex-col items-center">
+                <span className="text-[10px] text-[#a0a0a0] uppercase">Total</span>
+                <span className="text-sm font-bold text-white">{formatPrice(total)}</span>
+            </div>
+        </div>
+    );
+};
 
 const LoginScreen = ({ onLogin }) => {
     const [email, setEmail] = useState('');
@@ -675,7 +708,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 
 const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
     const [restaurantName, setRestaurantName] = useState('NaMesa');
-    const [inputUrl, setInputUrl] = useState('https://namesa-one.vercel.app/cardapio-digital.html');
+    const [inputUrl, setInputUrl] = useState(window.location.origin + window.location.pathname);
     const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
     useEffect(() => {
@@ -695,9 +728,11 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
 
         const img = new Image();
         img.crossOrigin = 'Anonymous';
-        const separator = inputUrl.includes('?') ? '&' : '?';
-        const qrData = encodeURIComponent(`${inputUrl}${separator}id=${userId}`);
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}&color=171717`;
+        const baseUrl = inputUrl.trim().replace(/\/$/, '');
+        const clientLink = `${baseUrl}?kiosque=${userId}`;
+        const qrData = encodeURIComponent(clientLink);
+        
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}&color=ea580c`;
         
         img.onload = () => {
             ctx.drawImage(img, (canvas.width - 250) / 2, 120, 250, 250);
@@ -742,14 +777,15 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
             </div>
 
             <div className="bg-[#1e1e1e] p-4 rounded-xl border border-[#2a2a2a] mb-6">
-                <label className="block text-sm text-[#a0a0a0] mb-2">Link do seu Cardápio Digital (Vercel)</label>
+                <label className="block text-sm text-[#a0a0a0] mb-2">Link do seu Cardápio Digital</label>
                 <input 
                     type="text" 
                     value={inputUrl} 
                     onChange={(e) => setInputUrl(e.target.value)} 
                     className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:outline-none focus:border-[#c4a47c] transition-colors" 
-                    placeholder="https://namesa-one.vercel.app/cardapio-digital.html" 
+                    placeholder="Link base" 
                 />
+                <p className="text-[10px] text-zinc-500 mt-2 italic">* O sistema anexará automaticamente o seu ID ao final deste link usando ?kiosque=.</p>
             </div>
             
             <div className="flex justify-center py-8">
@@ -757,7 +793,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
                     <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
                     <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
                     <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(inputUrl + (inputUrl.includes('?') ? '&' : '?') + 'id=' + userId)}&color=171717`} 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inputUrl.trim().replace(/\/$/, '') + '?kiosque=' + userId)}&color=ea580c`} 
                         alt="QR Code" 
                         className="w-[250px] h-[250px]" 
                     />
@@ -1046,18 +1082,12 @@ const Financeiro = ({ userId }) => {
         acc[curr.categoria] = (acc[curr.categoria] || 0) + Number(curr.valor);
         return acc;
     }, {});
-    const dataPie = Object.keys(categoriasAgrupadas).map(cat => ({ name: cat, value: categoriasAgrupadas[cat] }));
-    const cores = ['#c4a47c', '#8b949e', '#58a6ff', '#8b0000', '#2ea043'];
-
-    const categoryColorMap = {
-        'Lanches': '#c4a47c',    // Dourado
-        'Pratos': '#8b949e',     // Cinza Chumbo
-        'Diversão': '#58a6ff',   // Azul
-        'Outros': '#d4b48c',     // Dourado Claro
-        'Insumos': '#8b0000',    // Vermelho Escuro
-        'Operacional': '#2ea043',// Verde
-        'Venda': '#c4a47c'       // Dourado (Receitas)
-    };
+    
+    const dataPie = Object.keys(categoriasAgrupadas).map((cat, i) => ({ 
+        name: cat, 
+        value: categoriasAgrupadas[cat],
+        color: ['#c4a47c', '#8b949e', '#58a6ff', '#8b0000', '#2ea043'][i % 5]
+    }));
 
     return (
         <div className="space-y-6 animate-in fade-in">
@@ -1107,20 +1137,25 @@ const Financeiro = ({ userId }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-[#1e1e1e] p-6 rounded-xl border border-[#2a2a2a] h-[300px]">
-                    <h3 className="text-sm font-medium text-[#a0a0a0] mb-4">Por Categoria</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie data={dataPie} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                {dataPie.map((entry, i) => (
-                                    <Cell key={i} fill={categoryColorMap[entry.name] || cores[i % cores.length]} />
+                <div className="bg-[#1e1e1e] p-6 rounded-xl border border-[#2a2a2a] h-[350px] flex flex-col items-center">
+                    <h3 className="text-sm font-medium text-[#a0a0a0] mb-4 self-start">Distribuição por Categoria</h3>
+                    {dataPie.length > 0 ? (
+                        <div className="w-full flex-1 flex flex-col items-center justify-center">
+                            <SimplePieChart data={dataPie} />
+                            <div className="mt-4 flex flex-wrap justify-center gap-3">
+                                {dataPie.map((item, i) => (
+                                    <div key={i} className="flex items-center gap-1">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                                        <span className="text-[10px] text-[#a0a0a0]">{item.name}</span>
+                                    </div>
                                 ))}
-                            </Pie>
-                            <Tooltip contentStyle={{backgroundColor: '#121212', border: '1px solid #2a2a2a'}} itemStyle={{color: '#fff'}} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">Sem dados no período</div>
+                    )}
                 </div>
-                <div className="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] overflow-hidden flex flex-col max-h-[300px]">
+                <div className="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] overflow-hidden flex flex-col h-[350px]">
                     <div className="p-4 border-b border-[#2a2a2a] bg-[#121212]/50 text-[#f5f5f5] font-medium">Lista de Gastos</div>
                     <div className="overflow-y-auto flex-1 no-scrollbar">
                         <table className="w-full text-left text-xs">
@@ -1403,6 +1438,43 @@ const Dashboard = ({ onLogout, userId }) => {
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [isClientView, setIsClientView] = useState(false);
+    const [clientEstId, setClientEstId] = useState(null);
+    const [clientMenuData, setClientMenuData] = useState([]);
+    const [loadingClient, setLoadingClient] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const kiosqueId = params.get('kiosque') || params.get('id');
+        if (kiosqueId) {
+            setClientEstId(kiosqueId);
+            setIsClientView(true);
+            fetchClientMenu(kiosqueId);
+        }
+    }, []);
+
+    const fetchClientMenu = async (id) => {
+        setLoadingClient(true);
+        try {
+            const [catRes, itemsRes] = await Promise.all([
+                fetch(`${supabaseUrl}/rest/v1/categorias?select=*&order=ordem.asc`, { headers: supabaseHeaders }),
+                fetch(`${supabaseUrl}/rest/v1/itens_cardapio?user_id=eq.${id}&select=*`, { headers: supabaseHeaders })
+            ]);
+            const categorias = await catRes.json();
+            const itens = await itemsRes.json();
+            if (categorias && itens) {
+                setClientMenuData(categorias.map(c => ({
+                    categoryId: c.id,
+                    category: c.nome,
+                    items: itens.filter(i => i.categoria_id === c.id).map(i => ({
+                        id: i.id, name: i.nome, description: i.descricao, price: i.preco,
+                        image: i.imagem_url || fallbackImage
+                    }))
+                })));
+            }
+        } catch (e) { console.error(e); }
+        setLoadingClient(false);
+    };
 
     useEffect(() => {
         const generateAppIcon = () => {
@@ -1487,6 +1559,11 @@ export default function App() {
         link.rel = 'stylesheet';
         document.head.appendChild(link);
     }, []);
+
+    if (isClientView) {
+        if (loadingClient) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
+        return <SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} />;
+    }
 
     if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
     return <Dashboard onLogout={() => { setIsLoggedIn(false); setUserId(null); }} userId={userId} />;
