@@ -425,7 +425,7 @@ const ItemCard = ({ item, onAdd }) => (
     </div>
 );
 
-const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
+const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [activeCategory, setActiveCategory] = useState(menuData[0]?.category || '');
@@ -460,8 +460,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         try {
-            // Busca comanda existente para a mesa que não esteja cancelada (reabre se estiver concluída)
-            const resExistente = await fetch(`${supabaseUrl}/rest/v1/pedidos?mesa=eq.${mesaCliente}&status=neq.cancelado&order=created_at.desc&limit=1`, {
+            const resExistente = await fetch(`${supabaseUrl}/rest/v1/pedidos?mesa=eq.${mesaCliente}&status=neq.cancelado&user_id=eq.${userId}&order=created_at.desc&limit=1`, {
                 headers: supabaseHeaders
             });
             const dadosExistentes = await resExistente.json();
@@ -476,7 +475,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
                 finalOrderNumber = `#${String(pedidoId).padStart(2, '0')}`;
                 novoTotalCalculado = total;
 
-                await fetch(`${supabaseUrl}/rest/v1/pedidos?id=eq.${pedidoId}`, {
+                await fetch(`${supabaseUrl}/rest/v1/pedidos?id=eq.${pedidoId}&user_id=eq.${userId}`, {
                     method: 'PATCH',
                     headers: supabaseHeaders,
                     body: JSON.stringify({
@@ -492,7 +491,8 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
                         mesa: mesaCliente,
                         nome_cliente: nomeCliente,
                         total: total,
-                        status: 'pendente'
+                        status: 'pendente',
+                        user_id: userId
                     })
                 });
 
@@ -513,7 +513,8 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
                         nome_item_historico: item.name,
                         quantidade: item.quantity,
                         preco_unitario: item.price,
-                        subtotal: item.price * item.quantity
+                        subtotal: item.price * item.quantity,
+                        user_id: userId
                     })))
                 });
 
@@ -655,7 +656,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData }) => {
     );
 };
 
-const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido }) => {
+const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
     const [baseUrl, setBaseUrl] = useState('https://namesa.app/menu');
     const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
@@ -729,7 +730,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido }) => {
             {isSimuladorOpen && (
                 <div className="fixed inset-0 z-50 flex justify-end bg-black/80 backdrop-blur-sm transition-opacity">
                     <div className="w-full sm:w-[400px] h-full relative">
-                        <SimuladorCliente onBack={() => setIsSimuladorOpen(false)} onAddPedido={onAddPedido} menuData={menuData} />
+                        <SimuladorCliente onBack={() => setIsSimuladorOpen(false)} onAddPedido={onAddPedido} menuData={menuData} userId={userId} />
                     </div>
                 </div>
             )}
@@ -737,7 +738,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido }) => {
     );
 };
 
-const CardapioEditor = ({ menuData, setMenuData }) => {
+const CardapioEditor = ({ menuData, setMenuData, userId }) => {
     const [isSaved, setIsSaved] = useState(false);
     const [newItemName, setNewItemName] = useState('');
     const [newItemDesc, setNewItemDesc] = useState('');
@@ -765,7 +766,7 @@ const CardapioEditor = ({ menuData, setMenuData }) => {
 
     const handleDeleteItem = async (categoryIndex, itemIndex, itemId) => {
         try {
-            await fetch(`${supabaseUrl}/rest/v1/itens_cardapio?id=eq.${itemId}`, {
+            await fetch(`${supabaseUrl}/rest/v1/itens_cardapio?id=eq.${itemId}&user_id=eq.${userId}`, {
                 method: 'DELETE',
                 headers: supabaseHeaders
             });
@@ -780,7 +781,7 @@ const CardapioEditor = ({ menuData, setMenuData }) => {
             const itemsToUpdate = [];
             menuData.forEach(cat => cat.items.forEach(item => itemsToUpdate.push(item)));
             for (const item of itemsToUpdate) {
-                await fetch(`${supabaseUrl}/rest/v1/itens_cardapio?id=eq.${item.id}`, {
+                await fetch(`${supabaseUrl}/rest/v1/itens_cardapio?id=eq.${item.id}&user_id=eq.${userId}`, {
                     method: 'PATCH',
                     headers: supabaseHeaders,
                     body: JSON.stringify({
@@ -808,7 +809,8 @@ const CardapioEditor = ({ menuData, setMenuData }) => {
                     nome: newItemName,
                     descricao: newItemDesc,
                     preco: parseFloat(newItemPrice) || 0,
-                    imagem_url: finalImage
+                    imagem_url: finalImage,
+                    user_id: userId
                 })
             });
             
@@ -894,7 +896,7 @@ const CardapioEditor = ({ menuData, setMenuData }) => {
     );
 };
 
-const Financeiro = () => {
+const Financeiro = ({ userId }) => {
     const [despesas, setDespesas] = useState([]);
     const [filtroMes, setFiltroMes] = useState(new Date().getMonth() + 1);
     const [filtroDia, setFiltroDia] = useState('');
@@ -905,13 +907,13 @@ const Financeiro = () => {
     useEffect(() => {
         const fetchDespesas = async () => {
             try {
-                const res = await fetch(`${supabaseUrl}/rest/v1/despesas?select=*&order=data_despesa.desc`, { headers: supabaseHeaders });
+                const res = await fetch(`${supabaseUrl}/rest/v1/despesas?user_id=eq.${userId}&select=*&order=data_despesa.desc`, { headers: supabaseHeaders });
                 const data = await res.json();
                 setDespesas(data || []);
             } catch (e) { console.error(e); }
         };
         fetchDespesas();
-    }, []);
+    }, [userId]);
 
     const handleAddExp = async () => {
         if (!newExp.nome || !newExp.valor) return;
@@ -924,7 +926,8 @@ const Financeiro = () => {
                     valor: parseFloat(newExp.valor),
                     categoria: newExp.categoria,
                     metodo_pagamento: newExp.metodo,
-                    data_despesa: new Date().toISOString().split('T')[0]
+                    data_despesa: new Date().toISOString().split('T')[0],
+                    user_id: userId
                 })
             });
             if (res.ok) {
@@ -1100,8 +1103,8 @@ const Dashboard = ({ onLogout, userId }) => {
             try {
                 const [catRes, itemsRes, pedRes] = await Promise.all([
                     fetch(`${supabaseUrl}/rest/v1/categorias?select=*&order=ordem.asc`, { headers: supabaseHeaders }),
-                    fetch(`${supabaseUrl}/rest/v1/itens_cardapio?select=*`, { headers: supabaseHeaders }),
-                    fetch(`${supabaseUrl}/rest/v1/pedidos?select=*,itens_pedido(*)&order=created_at.desc&limit=20`, { headers: supabaseHeaders })
+                    fetch(`${supabaseUrl}/rest/v1/itens_cardapio?user_id=eq.${userId}&select=*`, { headers: supabaseHeaders }),
+                    fetch(`${supabaseUrl}/rest/v1/pedidos?user_id=eq.${userId}&select=*,itens_pedido(*)&order=created_at.desc&limit=20`, { headers: supabaseHeaders })
                 ]);
                 const categorias = await catRes.json();
                 const itens = await itemsRes.json();
@@ -1142,39 +1145,22 @@ const Dashboard = ({ onLogout, userId }) => {
                         }))
                     })));
                 }
-                if (peds) {
-                    setPedidos(peds.map(p => ({
-                        id: p.id, 
-                        orderNumber: `#${String(p.id).padStart(2, '0')}`,
-                        table: p.mesa, 
-                        customerName: p.nome_cliente, 
-                        total: p.total,
-                        status: p.status || 'pendente', 
-                        time: new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                        created_at: p.created_at,
-                        items: p.itens_pedido ? p.itens_pedido.map(ip => ({
-                            name: ip.nome_item_historico || "Item",
-                            quantity: ip.quantidade || 1
-                        })) : []
-                    })));
-                }
             } catch (e) { console.error(e); }
         };
         fetchInicial();
         const interval = setInterval(fetchInicial, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [userId]);
 
     const handleUpdateStatus = async (id, nextStatus) => {
         if (!nextStatus) return;
         try {
-            await fetch(`${supabaseUrl}/rest/v1/pedidos?id=eq.${id}`, {
+            await fetch(`${supabaseUrl}/rest/v1/pedidos?id=eq.${id}&user_id=eq.${userId}`, {
                 method: 'PATCH',
                 headers: supabaseHeaders,
                 body: JSON.stringify({ status: nextStatus })
             });
 
-            // Se o status for 'concluido' (Pedido Pago), contabiliza no financeiro
             if (nextStatus === 'concluido') {
                 const pedidoPago = pedidos.find(p => p.id === id);
                 if (pedidoPago) {
@@ -1186,7 +1172,8 @@ const Dashboard = ({ onLogout, userId }) => {
                             valor: pedidoPago.total,
                             categoria: 'Venda',
                             metodo_pagamento: 'Recebido',
-                            data_despesa: new Date().toISOString().split('T')[0]
+                            data_despesa: new Date().toISOString().split('T')[0],
+                            user_id: userId
                         })
                     });
                 }
@@ -1198,7 +1185,7 @@ const Dashboard = ({ onLogout, userId }) => {
 
     const handleClearHistory = async () => {
         try {
-            await fetch(`${supabaseUrl}/rest/v1/pedidos?status=in.("concluido","cancelado")`, {
+            await fetch(`${supabaseUrl}/rest/v1/pedidos?user_id=eq.${userId}&status=in.("concluido","cancelado")`, {
                 method: 'DELETE',
                 headers: supabaseHeaders
             });
@@ -1212,7 +1199,6 @@ const Dashboard = ({ onLogout, userId }) => {
             const index = prev.findIndex(p => p.id === pedido.id);
             if (index !== -1) {
                 const updated = [...prev];
-                // Mescla itens novos com os antigos para exibição imediata
                 updated[index] = {
                     ...pedido,
                     items: [...(prev[index].items || []), ...pedido.items]
@@ -1232,7 +1218,6 @@ const Dashboard = ({ onLogout, userId }) => {
 
     return (
         <div className="h-screen flex flex-col md:flex-row bg-[#0a0a0a] text-[#f5f5f5] overflow-hidden font-sans">
-            {}
             {notification && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-gradient-to-r from-[#c4a47c] to-[#d4b48c] text-[#121212] px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(196,164,124,0.4)] flex items-center gap-4 animate-in slide-in-from-top-10 duration-500 border border-[#d4b48c]/50">
                     <div className="bg-[#121212] p-2 rounded-full">
@@ -1304,9 +1289,8 @@ export default function App() {
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
-            // Fundo Preto Arredondado (Estilo iOS/Android Premium)
             ctx.fillStyle = '#0a0a0a';
-            const r = 100; // Border radius
+            const r = 100;
             ctx.beginPath();
             ctx.moveTo(r, 0);
             ctx.lineTo(512 - r, 0);
@@ -1320,13 +1304,11 @@ export default function App() {
             ctx.closePath();
             ctx.fill();
 
-            // Texto "Na" (Branco)
             ctx.font = 'bold 110px "Inter", sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.fillText('Na', 185, 285);
 
-            // Texto "Mesa" (Dourado)
             ctx.fillStyle = '#c4a47c';
             ctx.fillText('Mesa', 335, 285);
 
@@ -1340,19 +1322,16 @@ export default function App() {
         meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover";
         document.head.appendChild(meta);
 
-        // Favicon padrão
         const iconLink = document.createElement('link');
         iconLink.rel = "icon";
         iconLink.href = iconData;
         document.head.appendChild(iconLink);
 
-        // Ícone para iPhone/iOS
         const appleIcon = document.createElement('link');
         appleIcon.rel = "apple-touch-icon";
         appleIcon.href = iconData;
         document.head.appendChild(appleIcon);
 
-        // Configuração do Manifesto para instalação no Android/Chrome
         const manifest = {
             "name": "NaMesa",
             "short_name": "NaMesa",
