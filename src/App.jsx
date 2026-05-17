@@ -597,7 +597,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const isCheckoutValid = nomeCliente.trim() !== '' && mesaCliente.trim() !== '';
 
     return (
-        <div className="w-full min-h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
+        <div className="w-full h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
             <header className="bg-[#000000] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
@@ -628,7 +628,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom">
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom z-40">
                     <button 
                         onClick={() => setIsCartOpen(true)}
                         className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all"
