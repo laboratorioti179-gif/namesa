@@ -1562,6 +1562,23 @@ export default function App() {
         meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover";
         document.head.appendChild(meta);
 
+        const themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = "theme-color";
+        themeColorMeta.content = "#0a0a0a";
+        document.head.appendChild(themeColorMeta);
+
+        const appleStatusBarMeta = document.createElement('meta');
+        appleStatusBarMeta.name = "apple-mobile-web-app-status-bar-style";
+        appleStatusBarMeta.content = "black-translucent";
+        document.head.appendChild(appleStatusBarMeta);
+
+        const appleCapableMeta = document.createElement('meta');
+        appleCapableMeta.name = "apple-mobile-web-app-capable";
+        appleCapableMeta.content = "yes";
+        document.head.appendChild(appleCapableMeta);
+
+        document.body.style.backgroundColor = "#0a0a0a";
+
         // Meta tags para prevenir que o navegador traduza o sistema
         const metaNoTranslate = document.createElement('meta');
         metaNoTranslate.name = "google";
