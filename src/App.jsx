@@ -337,7 +337,7 @@ const LoginScreen = ({ onLogin }) => {
                 </div>
 
                 <div className="mt-6 text-center text-[10px] text-[#c4a47c] italic border-t border-[#2a2a2a] pt-4 uppercase tracking-[0.15em] font-medium opacity-80">
-                    Sua gestão na palma da mão, o sucesso na mesa do cliente.
+                    Sua gestão na palma da mão, o success na mesa do cliente.
                 </div>
             </form>
         </div>
@@ -381,7 +381,7 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
                     onClick={onClearHistory}
                     className="text-xs font-medium text-[#a0a0a0] hover:text-red-500 flex items-center gap-2 transition-colors border border-[#2a2a2a] px-3 py-1.5 rounded-lg hover:border-red-500/30"
                 >
-                    <Trash2 size={14} /> Limpar Pedidos
+                    <Trash2 size={14} /> Limpar
                 </button>
             </div>
             
@@ -1516,6 +1516,15 @@ export default function App() {
         meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover";
         document.head.appendChild(meta);
 
+        // Meta tags para prevenir que o navegador traduza o sistema
+        const metaNoTranslate = document.createElement('meta');
+        metaNoTranslate.name = "google";
+        metaNoTranslate.content = "notranslate";
+        document.head.appendChild(metaNoTranslate);
+
+        document.documentElement.setAttribute('translate', 'no');
+        document.documentElement.classList.add('notranslate');
+
         const iconLink = document.createElement('link');
         iconLink.rel = "icon";
         iconLink.href = iconData;
@@ -1560,11 +1569,19 @@ export default function App() {
         document.head.appendChild(link);
     }, []);
 
-    if (isClientView) {
-        if (loadingClient) return <div className="min-h-screen bg-[#000000] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
-        return <div className="min-h-screen bg-[#000000]"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
-    }
+    const appContent = (() => {
+        if (isClientView) {
+            if (loadingClient) return <div className="min-h-screen bg-[#000000] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
+            return <div className="min-h-screen bg-[#000000]"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
+        }
 
-    if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
-    return <Dashboard onLogout={() => { setIsLoggedIn(false); setUserId(null); }} userId={userId} />;
+        if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
+        return <Dashboard onLogout={() => { setIsLoggedIn(false); setUserId(null); }} userId={userId} />;
+    })();
+
+    return (
+        <div className="notranslate" translate="no">
+            {appContent}
+        </div>
+    );
 }
