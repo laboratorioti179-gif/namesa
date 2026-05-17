@@ -192,7 +192,7 @@ const LoginScreen = ({ onLogin }) => {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-[#c4a47c]/50 to-transparent"></div>
                 
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-serif text-[#c4a47c] mb-2 tracking-wide">NaMesa</h1>
+                    <h1 className="text-4xl text-[#c4a47c] mb-2 tracking-wide" style={{ fontFamily: "'Loubag', serif" }}>NaMesa</h1>
                     <p className="text-[#a0a0a0] text-xs uppercase tracking-[0.2em]">{isResettingPassword ? 'Recuperar Senha' : (isRegistering ? 'Criar Nova Conta' : 'Acesso Restrito')}</p>
                 </div>
 
@@ -375,6 +375,7 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
 
     return (
         <div className="animate-in fade-in">
+            <h1 className="text-3xl md:text-4xl text-[#c4a47c] mb-2" style={{ fontFamily: "'Loubag', serif" }}>NaMesa</h1>
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-serif text-[#f5f5f5]">Pedidos em Tempo Real</h2>
                 <button 
@@ -625,7 +626,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
                 </button>
-                <h2 className="font-serif text-lg text-[#f5f5f5] flex-1 text-center pr-8">Cardápio NaMesa</h2>
+                <h2 className="text-lg text-[#f5f5f5] flex-1 text-center pr-8" style={{ fontFamily: "'Loubag', serif" }}>Cardápio NaMesa</h2>
             </header>
 
             <div className="flex overflow-x-auto gap-2 p-3 bg-[#000000] border-b border-[#2a2a2a] shrink-0 no-scrollbar">
@@ -746,7 +747,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
         const ctx = canvas.getContext('2d');
         canvas.width = 400; canvas.height = 450;
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#000000'; ctx.font = '32px "Berkshire Swash", cursive'; ctx.textAlign = 'center'; ctx.fillText(restaurantName, canvas.width / 2, 60);
+        ctx.fillStyle = '#000000'; ctx.font = '32px "Loubag", serif'; ctx.textAlign = 'center'; ctx.fillText(restaurantName, canvas.width / 2, 60);
         ctx.font = '16px "Inter", sans-serif'; ctx.fillStyle = '#333333'; ctx.fillText("Peça sem sair da mesa!", canvas.width / 2, 90);
 
         const img = new Image();
@@ -813,7 +814,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
             
             <div className="flex justify-center py-8">
                 <div className="bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center p-8 w-full max-w-[400px] h-[450px] relative border border-[#2a2a2a] overflow-hidden">
-                    <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
+                    <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Loubag', serif" }}>{restaurantName}</h1>
                     <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
                     <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inputUrl.trim().replace(/\/$/, '') + '?kiosque=' + userId)}&color=000000`} 
@@ -1109,7 +1110,7 @@ const Financeiro = ({ userId }) => {
     const dataPie = Object.keys(categoriasAgrupadas).map((cat, i) => ({ 
         name: cat, 
         value: categoriasAgrupadas[cat],
-        color: ['#c4a47c', '#8b949e', '#58a6ff', '#8b0000', '#2ea043'][i % 5]
+        color: cat === 'Venda' ? '#2ea043' : ['#c4a47c', '#8b949e', '#58a6ff', '#8b0000', '#d4b48c'][i % 5]
     }));
 
     return (
@@ -1413,7 +1414,7 @@ const Dashboard = ({ onLogout, userId }) => {
 
             <nav className={`bg-[#1e1e1e] border-t md:border-t-0 border-[#2a2a2a] md:border-r transition-all duration-300 flex flex-row md:flex-col items-stretch shrink-0 fixed bottom-0 left-0 right-0 h-16 w-full z-50 md:relative md:h-full ${isSidebarOpen ? 'md:w-64' : 'md:w-20'}`}>
                 <div className={`hidden md:flex p-4 md:p-6 border-b border-[#2a2a2a] h-16 md:h-20 items-center ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}>
-                    <h1 className="text-xl md:text-2xl font-serif text-[#c4a47c] tracking-wide">{isSidebarOpen ? 'NaMesa' : 'N'}</h1>
+                    <h1 className="text-xl md:text-2xl text-[#c4a47c] tracking-wide" style={{ fontFamily: "'Loubag', serif" }}>{isSidebarOpen ? 'NaMesa' : 'N'}</h1>
                 </div>
                 <div className="flex-1 flex flex-row md:flex-col py-2 md:py-6 space-y-0 md:space-y-2 gap-1 md:gap-0 px-2 md:px-3 overflow-x-auto md:overflow-y-auto no-scrollbar justify-around md:justify-start">
                     {TABS.map(tab => {
@@ -1544,7 +1545,7 @@ export default function App() {
             ctx.closePath();
             ctx.fill();
 
-            ctx.font = 'bold 110px "Inter", sans-serif';
+            ctx.font = 'bold 110px "Loubag", serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.fillText('Na', 185, 285);
