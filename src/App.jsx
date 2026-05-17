@@ -616,7 +616,6 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                                 setIsCartOpen(false);
                                 setNomeCliente('');
                                 setMesaCliente('');
-                                onBack();
                             }}
                             className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(196,164,124,0.2)]"
                         >
