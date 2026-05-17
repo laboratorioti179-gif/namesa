@@ -491,6 +491,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const [nomeCliente, setNomeCliente] = useState('');
     const [mesaCliente, setMesaCliente] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (menuData.length > 0 && !activeCategory) {
@@ -517,6 +518,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     };
 
     const handleCheckout = async () => {
+        setIsSubmitting(true);
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         try {
@@ -595,6 +597,8 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             setShowSuccess(true);
         } catch (e) {
             console.error("Erro ao processar comanda", e);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -735,10 +739,12 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             </div>
                             <button 
                                 onClick={handleCheckout}
-                                disabled={!isCheckoutValid}
-                                className={`w-full py-2.5 sm:py-4 text-xs sm:text-base rounded-lg font-bold flex justify-center items-center gap-2 transition-none ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
+                                disabled={!isCheckoutValid || isSubmitting}
+                                className={`w-full py-3 sm:py-4 text-xs sm:text-base rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg transition-transform active:scale-95 ${(!isCheckoutValid || isSubmitting) ? 'bg-[#2a2a2a] text-[#555] cursor-not-allowed' : 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]'}`}
                             >
-                                Enviar Pedido <Send size={16} className="sm:w-5 sm:h-5" />
+                                {isSubmitting ? 'Aguarde...' : (
+                                    <>Enviar Pedido <Send size={16} className="sm:w-5 sm:h-5" /></>
+                                )}
                             </button>
                         </div>
                     </div>
