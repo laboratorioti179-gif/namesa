@@ -1368,7 +1368,7 @@ const Dashboard = ({ onLogout, userId }) => {
     };
 
     return (
-        <div className="h-screen flex flex-row bg-[#0a0a0a] text-[#f5f5f5] overflow-hidden font-sans">
+        <div className="h-screen flex flex-col md:flex-row bg-[#0a0a0a] text-[#f5f5f5] overflow-hidden font-sans">
             {notification && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-gradient-to-r from-[#c4a47c] to-[#d4b48c] text-[#121212] px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(196,164,124,0.4)] flex items-center gap-4 animate-in slide-in-from-top-10 duration-500 border border-[#d4b48c]/50">
                     <div className="bg-[#121212] p-2 rounded-full">
@@ -1388,29 +1388,29 @@ const Dashboard = ({ onLogout, userId }) => {
                 <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>
             )}
 
-            <nav className={`bg-[#1e1e1e] border-r border-[#2a2a2a] transition-all duration-300 flex flex-col items-stretch shrink-0 ${isSidebarOpen ? 'absolute md:relative w-64 h-full z-30' : 'relative w-16 md:w-20 z-20'}`}>
-                <div className={`p-4 md:p-6 border-b border-[#2a2a2a] h-16 md:h-20 flex items-center ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}>
+            <nav className={`bg-[#1e1e1e] border-t md:border-t-0 border-[#2a2a2a] md:border-r transition-all duration-300 flex flex-row md:flex-col items-stretch shrink-0 fixed bottom-0 left-0 right-0 h-16 w-full z-50 md:relative md:h-full ${isSidebarOpen ? 'md:w-64' : 'md:w-20'}`}>
+                <div className={`hidden md:flex p-4 md:p-6 border-b border-[#2a2a2a] h-16 md:h-20 items-center ${isSidebarOpen ? 'justify-start' : 'justify-center'}`}>
                     <h1 className="text-xl md:text-2xl font-serif text-[#c4a47c] tracking-wide">{isSidebarOpen ? 'NaMesa' : 'N'}</h1>
                 </div>
-                <div className="flex-1 flex flex-col py-4 md:py-6 space-y-2 px-2 md:px-3 overflow-y-auto no-scrollbar">
+                <div className="flex-1 flex flex-row md:flex-col py-2 md:py-6 space-y-0 md:space-y-2 gap-1 md:gap-0 px-2 md:px-3 overflow-x-auto md:overflow-y-auto no-scrollbar justify-around md:justify-start">
                     {TABS.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
                         return (
-                            <button key={tab.id} onClick={() => { setActiveTab(tab.id); if(window.innerWidth < 768) setIsSidebarOpen(false); }} className={`flex items-center rounded-xl transition-all duration-200 shrink-0 w-full ${isSidebarOpen ? 'px-4 py-3 gap-4' : 'justify-center p-3'} ${isActive ? 'bg-[#c4a47c]/10 text-[#c4a47c]' : 'text-[#a0a0a0] hover:bg-[#121212] hover:text-[#f5f5f5]'}`}>
+                            <button key={tab.id} onClick={() => { setActiveTab(tab.id); if(window.innerWidth < 768) setIsSidebarOpen(false); }} className={`flex flex-col md:flex-row items-center rounded-xl transition-all duration-200 shrink-0 ${isSidebarOpen ? 'md:px-4 md:py-3 md:gap-4 p-2' : 'p-2 md:p-3 md:justify-center'} ${isActive ? 'bg-[#c4a47c]/10 text-[#c4a47c]' : 'text-[#a0a0a0] hover:bg-[#121212] hover:text-[#f5f5f5]'}`}>
                                 <Icon size={20} className="md:w-[22px] md:h-[22px] shrink-0" />
-                                {isSidebarOpen && <span className="text-sm font-medium whitespace-nowrap">{tab.label}</span>}
+                                <span className={`hidden md:inline text-sm font-medium whitespace-nowrap ${isSidebarOpen ? 'md:block' : 'md:hidden'}`}>{tab.label}</span>
                             </button>
                         );
                     })}
                 </div>
-                <div className="p-2 md:p-4 border-t border-[#2a2a2a]">
-                    <button onClick={onLogout} className={`flex items-center rounded-xl text-[#8b0000] hover:bg-[#8b0000]/10 transition-colors w-full ${isSidebarOpen ? 'px-4 py-3 gap-3' : 'justify-center p-3'}`}>
+                <div className="p-2 md:p-4 border-t-0 md:border-t border-[#2a2a2a] flex items-center justify-center">
+                    <button onClick={onLogout} className={`flex items-center rounded-xl text-[#8b0000] hover:bg-[#8b0000]/10 transition-colors ${isSidebarOpen ? 'md:px-4 md:py-3 md:gap-3 p-2' : 'p-2 md:p-3 md:justify-center'}`}>
                         <LogOut size={20} className="shrink-0" />
-                        {isSidebarOpen && <span className="text-sm font-bold whitespace-nowrap">Sair</span>}
+                        <span className={`hidden md:inline text-sm font-bold whitespace-nowrap ${isSidebarOpen ? 'md:block' : 'md:hidden'}`}>Sair</span>
                     </button>
                 </div>
-                <button onClick={toggleSidebar} className="absolute top-1/2 -right-3 -translate-y-1/2 bg-[#1e1e1e] border border-[#2a2a2a] rounded-full p-1 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors z-40">
+                <button onClick={toggleSidebar} className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 bg-[#1e1e1e] border border-[#2a2a2a] rounded-full p-1 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors z-40">
                     {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
                 </button>
             </nav>
