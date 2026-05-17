@@ -455,7 +455,7 @@ const PedidosList = ({ pedidos, onUpdateStatus, onClearHistory }) => {
     );
 };
 
-const ItemCard = ({ item, onAdd }) => (
+const ItemCard = ({ item, quantity, onAdd, onUpdate }) => (
     <div className="bg-[#000000] border border-[#2a2a2a] rounded-lg mb-4 overflow-hidden shadow-lg">
         <img 
             src={item.image || fallbackImage} 
@@ -469,9 +469,17 @@ const ItemCard = ({ item, onAdd }) => (
                 <p className="text-xs text-[#a0a0a0] mt-1 line-clamp-2">{item.description}</p>
                 <p className="font-medium text-[#c4a47c] mt-1">{formatPrice(item.price)}</p>
             </div>
-            <button onClick={() => onAdd(item)} className="bg-[#000000] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2.5 rounded-full border border-[#2a2a2a] transition-colors shrink-0">
-                <Plus size={20} />
-            </button>
+            {quantity > 0 ? (
+                <div className="flex items-center gap-3 bg-[#000000] rounded-full border border-[#2a2a2a] px-2 py-1 shrink-0 animate-in fade-in">
+                    <button onClick={() => onUpdate(-1)} className="text-[#a0a0a0] hover:text-[#f5f5f5] p-1"><Minus size={16} /></button>
+                    <span className="text-sm w-4 text-center font-medium text-[#f5f5f5]">{quantity}</span>
+                    <button onClick={() => onUpdate(1)} className="text-[#c4a47c] hover:text-[#d4b48c] p-1"><Plus size={16} /></button>
+                </div>
+            ) : (
+                <button onClick={() => onAdd(item)} className="bg-[#000000] text-[#c4a47c] hover:bg-[#c4a47c] hover:text-[#121212] p-2.5 rounded-full border border-[#2a2a2a] transition-colors shrink-0 animate-in fade-in">
+                    <Plus size={20} />
+                </button>
+            )}
         </div>
     </div>
 );
@@ -644,21 +652,31 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             <div className="flex-1 bg-[#000000] overflow-y-auto p-4 pb-28 no-scrollbar">
                 {menuData.map(category => (
                     <div key={category.categoryId} className={activeCategory === category.category ? 'block' : 'hidden'}>
-                        {category.items.map(item => (
-                            <ItemCard key={item.id} item={item} onAdd={addToCart} />
-                        ))}
+                        {category.items.map(item => {
+                            const cartItem = cart.find(i => i.id === item.id);
+                            const quantity = cartItem ? cartItem.quantity : 0;
+                            return (
+                                <ItemCard 
+                                    key={item.id} 
+                                    item={item} 
+                                    quantity={quantity}
+                                    onAdd={addToCart} 
+                                    onUpdate={(delta) => updateQuantity(item.id, delta)}
+                                />
+                            );
+                        })}
                     </div>
                 ))}
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom duration-75 z-40">
+                <div className="absolute bottom-0 left-0 right-0 p-3 pb-6 sm:p-4 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent z-40">
                     <button 
                         onClick={() => setIsCartOpen(true)}
-                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-colors pointer-events-auto"
+                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-3 sm:p-4 flex justify-between items-center font-bold text-sm sm:text-base shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-colors pointer-events-auto"
                     >
                         <div className="flex items-center gap-2">
-                            <ShoppingCart size={20} />
+                            <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
                             <span>{cartCount} {cartCount === 1 ? 'item' : 'itens'}</span>
                         </div>
                         <span>{formatPrice(cartTotal)}</span>
@@ -718,9 +736,9 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             <button 
                                 onClick={handleCheckout}
                                 disabled={!isCheckoutValid}
-                                className={`w-full py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
+                                className={`w-full py-3 sm:py-4 text-sm sm:text-base rounded-xl font-bold flex justify-center items-center gap-2 transition-colors ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
                             >
-                                Enviar Pedido <Send size={20} />
+                                Enviar Pedido <Send size={18} className="sm:w-5 sm:h-5" />
                             </button>
                         </div>
                     </div>
@@ -747,7 +765,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
         const ctx = canvas.getContext('2d');
         canvas.width = 400; canvas.height = 450;
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#000000'; ctx.font = '32px "Loubag", serif'; ctx.textAlign = 'center'; ctx.fillText(restaurantName, canvas.width / 2, 60);
+        ctx.fillStyle = '#000000'; ctx.font = '32px "Berkshire Swash", cursive'; ctx.textAlign = 'center'; ctx.fillText(restaurantName, canvas.width / 2, 60);
         ctx.font = '16px "Inter", sans-serif'; ctx.fillStyle = '#333333'; ctx.fillText("Peça sem sair da mesa!", canvas.width / 2, 90);
 
         const img = new Image();
@@ -814,7 +832,7 @@ const QRCodeGenerator = ({ onSimulate, menuData, onAddPedido, userId }) => {
             
             <div className="flex justify-center py-8">
                 <div className="bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center p-8 w-full max-w-[400px] h-[450px] relative border border-[#2a2a2a] overflow-hidden">
-                    <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Loubag', serif" }}>{restaurantName}</h1>
+                    <h1 className="text-black text-[32px] mt-2 mb-2 text-center w-full truncate px-4" style={{ fontFamily: "'Berkshire Swash', cursive" }}>{restaurantName}</h1>
                     <p className="text-[#333333] text-[16px] mb-8">Peça sem sair da mesa!</p>
                     <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inputUrl.trim().replace(/\/$/, '') + '?kiosque=' + userId)}&color=000000`} 
@@ -969,6 +987,41 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                 </button>
             </div>
 
+            <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
+                <h3 className="text-lg font-bold text-[#c4a47c] mb-4">Adicionar Novo Item</h3>
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full space-y-2">
+                        <div className="flex gap-2">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
+                                <ImagePlus size={14} /> Carregar Foto
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, setNewItemImage)} />
+                            </label>
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
+                                <Camera size={14} /> Tirar Foto
+                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, setNewItemImage)} />
+                            </label>
+                        </div>
+                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="Ou cole o Link da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg text-sm" />
+                    </div>
+                    <div className="flex-1 w-full">
+                        <select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg">
+                            <option value="">Categoria...</option>
+                            {menuData.map(cat => <option key={cat.categoryId} value={cat.categoryId}>{cat.category}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex-1 w-full">
+                        <input type="text" value={newItemName} onChange={e => setNewItemName(e.target.value)} placeholder="Nome" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
+                    </div>
+                    <div className="flex-1 w-full">
+                        <input type="text" value={newItemDesc} onChange={e => setNewItemDesc(e.target.value)} placeholder="Descrição" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
+                    </div>
+                    <div className="w-full sm:w-24">
+                        <input type="number" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} placeholder="0.00" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#c4a47c] p-2.5 rounded-lg" />
+                    </div>
+                    <button onClick={handleAddNewItem} disabled={isAdding || !newItemName || !selectedCategoryId} className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold hover:bg-[#d4b48c] disabled:opacity-50">{isAdding ? '...' : 'Adicionar'}</button>
+                </div>
+            </div>
+
             {menuData.map((category, cIdx) => (
                 <div key={category.categoryId} className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a] shadow-lg">
                     <h3 className="text-lg font-bold text-[#c4a47c] mb-4">{category.category}</h3>
@@ -1005,41 +1058,6 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                     </div>
                 </div>
             ))}
-
-            <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a] mt-6">
-                <h3 className="text-lg font-bold text-[#c4a47c] mb-4">Adicionar Novo Item</h3>
-                <div className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="flex-1 w-full space-y-2">
-                        <div className="flex gap-2">
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
-                                <ImagePlus size={14} /> Carregar Foto
-                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, setNewItemImage)} />
-                            </label>
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
-                                <Camera size={14} /> Tirar Foto
-                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, setNewItemImage)} />
-                            </label>
-                        </div>
-                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="Ou cole o Link da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg text-sm" />
-                    </div>
-                    <div className="flex-1 w-full">
-                        <select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg">
-                            <option value="">Categoria...</option>
-                            {menuData.map(cat => <option key={cat.categoryId} value={cat.categoryId}>{cat.category}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex-1 w-full">
-                        <input type="text" value={newItemName} onChange={e => setNewItemName(e.target.value)} placeholder="Nome" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
-                    </div>
-                    <div className="flex-1 w-full">
-                        <input type="text" value={newItemDesc} onChange={e => setNewItemDesc(e.target.value)} placeholder="Descrição" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg" />
-                    </div>
-                    <div className="w-full sm:w-24">
-                        <input type="number" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} placeholder="0.00" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#c4a47c] p-2.5 rounded-lg" />
-                    </div>
-                    <button onClick={handleAddNewItem} disabled={isAdding || !newItemName || !selectedCategoryId} className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold hover:bg-[#d4b48c] disabled:opacity-50">{isAdding ? '...' : 'Adicionar'}</button>
-                </div>
-            </div>
         </div>
     );
 };
