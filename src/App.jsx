@@ -193,7 +193,7 @@ const LoginScreen = ({ onLogin }) => {
                 
                 <div className="text-center mb-8">
                     <h1 className="text-4xl text-[#c4a47c] mb-2 tracking-wide" style={{ fontFamily: "'Loubag', serif" }}>NaMesa</h1>
-                    <p className="text-[#a0a0a0] text-xs uppercase tracking-[0.2em]">{isResettingPassword ? 'Recuperar Senha' : (isRegistering ? 'Criar Nova Conta' : 'Acesso Restrito')}</p>
+                    <p className="text-[#a0a0a0] text-xs">{isResettingPassword ? 'Recuperar Senha' : (isRegistering ? 'Criar Nova Conta' : 'Seu cardápio digital!')}</p>
                 </div>
 
                 {error && (
@@ -336,7 +336,7 @@ const LoginScreen = ({ onLogin }) => {
                     )}
                 </div>
 
-                <div className="mt-6 text-center text-[10px] text-[#c4a47c] italic border-t border-[#2a2a2a] pt-4 uppercase tracking-[0.15em] font-medium opacity-80">
+                <div className="mt-6 text-center text-[10px] text-[#a0a0a0] italic border-t border-[#2a2a2a] pt-4 font-medium opacity-80">
                     Sua gestão na palma da mão, o success na mesa do cliente.
                 </div>
             </form>
@@ -996,18 +996,17 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
             <div className="bg-[#1e1e1e] p-5 rounded-xl border border-[#2a2a2a]">
                 <h3 className="text-lg font-bold text-[#c4a47c] mb-4">Adicionar Novo Item</h3>
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="flex-1 w-full space-y-2">
-                        <div className="flex gap-2">
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
+                    <div className="flex-1 w-full">
+                        <div className="flex gap-2 h-full">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2.5 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
                                 <ImagePlus size={14} /> Carregar Foto
                                 <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, setNewItemImage)} />
                             </label>
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2.5 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
                                 <Camera size={14} /> Tirar Foto
                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, setNewItemImage)} />
                             </label>
                         </div>
-                        <input type="text" value={newItemImage} onChange={e => setNewItemImage(e.target.value)} placeholder="Ou cole o Link da Foto" className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg text-sm" />
                     </div>
                     <div className="flex-1 w-full">
                         <select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] p-2.5 rounded-lg">
@@ -1043,16 +1042,18 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                                 <div className="flex-1 w-full space-y-2">
                                     <input type="text" value={item.name} onChange={(e) => handleItemChange(cIdx, iIdx, 'name', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#f5f5f5] font-semibold focus:outline-none focus:border-[#c4a47c] px-1" />
                                     <input type="text" value={item.description} onChange={(e) => handleItemChange(cIdx, iIdx, 'description', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" />
-                                    <div className="flex items-center gap-2 w-full border-b border-[#2a2a2a] pb-1 px-1 font-sans">
-                                        <input type="text" value={item.image} onChange={(e) => handleItemChange(cIdx, iIdx, 'image', e.target.value)} className="w-full bg-transparent text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c]" placeholder="Link da Foto" />
-                                        <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Carregar Foto">
-                                            <ImagePlus size={16} />
-                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
-                                        </label>
-                                        <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Tirar Foto com a Câmera">
-                                            <Camera size={16} />
-                                            <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
-                                        </label>
+                                    <div className="flex items-center justify-between gap-2 w-full border-b border-[#2a2a2a] pb-1 px-1 font-sans">
+                                        <span className="text-[#a0a0a0] text-sm">Atualizar foto</span>
+                                        <div className="flex items-center gap-3">
+                                            <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Carregar Foto">
+                                                <ImagePlus size={16} />
+                                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
+                                            </label>
+                                            <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Tirar Foto com a Câmera">
+                                                <Camera size={16} />
+                                                <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, (val) => handleItemChange(cIdx, iIdx, 'image', val))} />
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="w-full sm:w-24">
