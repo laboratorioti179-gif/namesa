@@ -1459,12 +1459,35 @@ const Dashboard = ({ onLogout, userId }) => {
 };
 
 export default function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userId, setUserId] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        try {
+            return localStorage.getItem('isLoggedIn') === 'true';
+        } catch (e) {
+            return false;
+        }
+    });
+    const [userId, setUserId] = useState(() => {
+        try {
+            return localStorage.getItem('userId') || null;
+        } catch (e) {
+            return null;
+        }
+    });
     const [isClientView, setIsClientView] = useState(false);
     const [clientEstId, setClientEstId] = useState(null);
     const [clientMenuData, setClientMenuData] = useState([]);
     const [loadingClient, setLoadingClient] = useState(false);
+
+    useEffect(() => {
+        try {
+            const logged = localStorage.getItem('isLoggedIn') === 'true';
+            const storedId = localStorage.getItem('userId');
+            if (logged && storedId) {
+                setIsLoggedIn(true);
+                setUserId(storedId);
+            }
+        } catch (e) {}
+    }, []);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -1598,8 +1621,22 @@ export default function App() {
             return <div className="h-screen max-h-screen bg-[#000000] overflow-hidden"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
         }
 
-        if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
-        return <Dashboard onLogout={() => { setIsLoggedIn(false); setUserId(null); }} userId={userId} />;
+        if (!isLoggedIn) return <LoginScreen onLogin={(id) => { 
+            setUserId(id); 
+            setIsLoggedIn(true); 
+            try {
+                localStorage.setItem('userId', id);
+                localStorage.setItem('isLoggedIn', 'true');
+            } catch (e) {}
+        }} />;
+        return <Dashboard onLogout={() => { 
+            setIsLoggedIn(false); 
+            setUserId(null); 
+            try {
+                localStorage.removeItem('userId');
+                localStorage.removeItem('isLoggedIn');
+            } catch (e) {}
+        }} userId={userId} />;
     })();
 
     return (
