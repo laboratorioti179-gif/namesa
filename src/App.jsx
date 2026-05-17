@@ -716,12 +716,12 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             {cart.map(item => (
                                 <div key={item.id} className="flex justify-between items-center mb-4 bg-[#000000] p-3 rounded-lg border border-[#2a2a2a]">
                                     <div>
-                                        <p className="font-medium text-[#f5f5f5] text-sm">{item.name}</p>
+                                        <p className="font-medium text-[#f5f5f5] text-sm"><span className="text-[#c4a47c] font-bold mr-1">{item.quantity}x</span> {item.name}</p>
                                         <p className="text-[#c4a47c] text-xs">{formatPrice(item.price)}</p>
                                     </div>
                                     <div className="flex items-center gap-3 bg-[#000000] rounded-full border border-[#2a2a2a] px-2 py-1">
                                         <button onClick={() => updateQuantity(item.id, -1)} className="text-[#a0a0a0] hover:text-[#f5f5f5]"><Minus size={14} /></button>
-                                        <span className="text-sm w-4 text-center font-medium">{item.quantity}</span>
+                                        <span className="text-sm w-4 text-center font-medium text-[#f5f5f5]">{item.quantity}</span>
                                         <button onClick={() => updateQuantity(item.id, 1)} className="text-[#c4a47c] hover:text-[#d4b48c]"><Plus size={14} /></button>
                                     </div>
                                 </div>
