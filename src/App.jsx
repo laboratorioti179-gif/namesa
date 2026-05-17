@@ -670,13 +670,13 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-3 pb-6 sm:p-4 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent z-40">
+                <div className="absolute bottom-0 left-0 right-0 p-2 pb-4 sm:p-4 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent z-40">
                     <button 
                         onClick={() => setIsCartOpen(true)}
-                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-3 sm:p-4 flex justify-between items-center font-bold text-sm sm:text-base shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-colors pointer-events-auto"
+                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-lg p-2.5 sm:p-4 flex justify-between items-center font-bold text-xs sm:text-base shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-none pointer-events-auto"
                     >
                         <div className="flex items-center gap-2">
-                            <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
+                            <ShoppingCart size={16} className="sm:w-5 sm:h-5" />
                             <span>{cartCount} {cartCount === 1 ? 'item' : 'itens'}</span>
                         </div>
                         <span>{formatPrice(cartTotal)}</span>
@@ -736,9 +736,9 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             <button 
                                 onClick={handleCheckout}
                                 disabled={!isCheckoutValid}
-                                className={`w-full py-3 sm:py-4 text-sm sm:text-base rounded-xl font-bold flex justify-center items-center gap-2 transition-colors ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
+                                className={`w-full py-2.5 sm:py-4 text-xs sm:text-base rounded-lg font-bold flex justify-center items-center gap-2 transition-none ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
                             >
-                                Enviar Pedido <Send size={18} className="sm:w-5 sm:h-5" />
+                                Enviar Pedido <Send size={16} className="sm:w-5 sm:h-5" />
                             </button>
                         </div>
                     </div>
