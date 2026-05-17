@@ -601,13 +601,9 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                         <div className="text-6xl mb-4 animate-bounce">
                             🎆
                         </div>
-                        <div className="absolute -top-10 left-10 text-4xl animate-pulse delay-75">✨</div>
-                        <div className="absolute -bottom-5 right-10 text-4xl animate-pulse delay-150">🎉</div>
-                        <div className="absolute top-1/4 right-5 text-3xl animate-ping duration-1000">💥</div>
-                        <div className="absolute bottom-1/3 left-5 text-3xl animate-ping duration-1000 delay-300">💥</div>
                         
                         <h3 className="text-2xl font-serif text-[#c4a47c] mb-2 font-bold">Pedido na Cozinha!</h3>
-                        <p className="text-zinc-300 text-sm mb-6">Seu pedido foi enviado para a cozinha com sucesso. Prepare-se para saborear! 🧑‍🍳🎆</p>
+                        <p className="text-zinc-300 text-sm mb-6">Seu pedido foi enviado para a cozinha com sucesso. Prepare-se para saborear!</p>
                         
                         <button 
                             onClick={() => {
@@ -619,7 +615,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             }}
                             className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(196,164,124,0.2)]"
                         >
-                            Entendido! 🎉
+                            Entendido!
                         </button>
                     </div>
                 </div>
@@ -655,10 +651,10 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom z-40">
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom duration-75 z-40">
                     <button 
                         onClick={() => setIsCartOpen(true)}
-                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all pointer-events-auto"
+                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-colors pointer-events-auto"
                     >
                         <div className="flex items-center gap-2">
                             <ShoppingCart size={20} />
@@ -671,7 +667,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 
             {isCartOpen && (
                 <div className="absolute inset-0 z-50 bg-black/80 flex flex-col justify-end">
-                    <div className="bg-[#000000] w-full h-[85%] rounded-t-2xl flex flex-col border-t border-[#2a2a2a] animate-in slide-in-from-bottom">
+                    <div className="bg-[#000000] w-full h-[85%] rounded-t-2xl flex flex-col border-t border-[#2a2a2a] animate-in slide-in-from-bottom duration-75">
                         <div className="p-4 border-b border-[#2a2a2a] flex justify-between items-center">
                             <h3 className="text-lg font-bold text-[#c4a47c]">Seu Carrinho</h3>
                             <button onClick={() => setIsCartOpen(false)} className="text-[#a0a0a0] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors"><X size={20} /></button>
@@ -721,7 +717,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                             <button 
                                 onClick={handleCheckout}
                                 disabled={!isCheckoutValid}
-                                className={`w-full py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition-all ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
+                                className={`w-full py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors ${isCheckoutValid ? 'bg-[#c4a47c] text-[#121212] hover:bg-[#d4b48c]' : 'bg-[#2a2a2a] text-[#555] cursor-not-allowed'}`}
                             >
                                 Enviar Pedido <Send size={20} />
                             </button>
