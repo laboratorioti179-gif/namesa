@@ -597,7 +597,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const isCheckoutValid = nomeCliente.trim() !== '' && mesaCliente.trim() !== '';
 
     return (
-        <div className="w-full min-h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right">
+        <div className="w-full h-screen max-h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right overflow-hidden">
             <header className="bg-[#000000] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
@@ -617,7 +617,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                 ))}
             </div>
 
-            <div className="flex-1 bg-[#000000] overflow-y-auto p-4 pb-24">
+            <div className="flex-1 bg-[#000000] overflow-y-auto p-4 pb-28 no-scrollbar">
                 {menuData.map(category => (
                     <div key={category.categoryId} className={activeCategory === category.category ? 'block' : 'hidden'}>
                         {category.items.map(item => (
@@ -628,10 +628,10 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
             </div>
 
             {cartCount > 0 && !isCartOpen && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom">
+                <div className="absolute bottom-0 left-0 right-0 p-4 pb-8 sm:pb-4 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent animate-in slide-in-from-bottom z-40">
                     <button 
                         onClick={() => setIsCartOpen(true)}
-                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all"
+                        className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] rounded-xl p-4 flex justify-between items-center font-bold shadow-[0_0_20px_rgba(196,164,124,0.3)] transition-all pointer-events-auto"
                     >
                         <div className="flex items-center gap-2">
                             <ShoppingCart size={20} />
@@ -960,7 +960,7 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                                 <div className="flex-1 w-full space-y-2">
                                     <input type="text" value={item.name} onChange={(e) => handleItemChange(cIdx, iIdx, 'name', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#f5f5f5] font-semibold focus:outline-none focus:border-[#c4a47c] px-1" />
                                     <input type="text" value={item.description} onChange={(e) => handleItemChange(cIdx, iIdx, 'description', e.target.value)} className="w-full bg-transparent border-b border-[#2a2a2a] text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c] px-1" />
-                                    <div className="flex items-center gap-2 w-full border-b border-[#2a2a2a] pb-1 px-1">
+                                    <div className="flex items-center gap-2 w-full border-b border-[#2a2a2a] pb-1 px-1 font-sans">
                                         <input type="text" value={item.image} onChange={(e) => handleItemChange(cIdx, iIdx, 'image', e.target.value)} className="w-full bg-transparent text-[#a0a0a0] text-sm focus:outline-none focus:border-[#c4a47c]" placeholder="Link da Foto" />
                                         <label className="cursor-pointer text-[#a0a0a0] hover:text-[#c4a47c]" title="Carregar Foto">
                                             <ImagePlus size={16} />
@@ -987,11 +987,11 @@ const CardapioEditor = ({ menuData, setMenuData, userId }) => {
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1 w-full space-y-2">
                         <div className="flex gap-2">
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
                                 <ImagePlus size={14} /> Carregar Foto
                                 <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageFile(e, setNewItemImage)} />
                             </label>
-                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium">
+                            <label className="flex-1 cursor-pointer bg-[#121212] border border-[#2a2a2a] rounded-lg py-2 flex justify-center items-center gap-2 text-[#a0a0a0] hover:text-[#c4a47c] transition-colors text-xs font-medium font-sans">
                                 <Camera size={14} /> Tirar Foto
                                 <input type="file" className="hidden" accept="image/*" capture="environment" onChange={(e) => handleImageFile(e, setNewItemImage)} />
                             </label>
@@ -1096,7 +1096,7 @@ const Financeiro = ({ userId }) => {
                     <h2 className="text-xl font-serif text-[#f5f5f5]">Financeiro</h2>
                     <p className="text-[#a0a0a0] text-sm">Controle de gastos e transações.</p>
                 </div>
-                <button onClick={() => setIsAdding(!isAdding)} className="bg-[#c4a47c] text-[#121212] px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors">
+                <button onClick={() => setIsAdding(!isAdding)} className="bg-[#c4a47c] text-[#121212] px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors font-sans">
                     <Plus size={20} /> Nova Despesa
                 </button>
             </div>
@@ -1109,7 +1109,7 @@ const Financeiro = ({ userId }) => {
                         <select value={newExp.categoria} onChange={e => setNewExp({...newExp, categoria: e.target.value})} className="bg-[#121212] border border-[#2a2a2a] text-white p-2.5 rounded-lg">
                             <option>Insumos</option><option>Operacional</option><option>Marketing</option><option>Equipe</option>
                         </select>
-                        <button onClick={handleAddExp} className="bg-[#c4a47c] text-[#121212] font-bold rounded-lg py-2.5">Salvar</button>
+                        <button onClick={handleAddExp} className="bg-[#c4a47c] text-[#121212] font-bold rounded-lg py-2.5 font-sans">Salvar</button>
                     </div>
                 </div>
             )}
@@ -1119,7 +1119,7 @@ const Financeiro = ({ userId }) => {
                     {meses.map(m => <option key={m.v} value={m.v}>{m.n}</option>)}
                 </select>
                 <input type="number" value={filtroDia} onChange={e => setFiltroDia(e.target.value)} placeholder="Dia" className="bg-[#121212] border border-[#2a2a2a] text-white px-3 py-2 rounded-lg w-20" />
-                <div className="relative flex-1 max-w-xs">
+                <div className="relative flex-1 max-w-xs font-sans">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a0a0a0]" size={16} />
                     <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar..." className="bg-[#121212] border border-[#2a2a2a] rounded-lg pl-9 pr-4 py-2 text-white w-full" />
                 </div>
@@ -1217,7 +1217,7 @@ const PerfilEditor = () => {
                     <div><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Lock size={14}/> CPF</label><input type="text" value={profile.cpf} onChange={e => setProfile({...profile, cpf: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none" /></div>
                     <div className="md:col-span-2"><label className="text-xs text-[#a0a0a0] mb-2 block flex items-center gap-2"><Mail size={14}/> E-mail</label><input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} className="w-full bg-[#121212] border border-[#2a2a2a] text-[#f5f5f5] px-4 py-2.5 rounded-lg focus:border-[#c4a47c] outline-none opacity-70 cursor-not-allowed" disabled title="O e-mail não pode ser alterado por aqui" /></div>
                 </div>
-                <div className="flex justify-end pt-4"><button className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors"><Save size={20}/> Salvar Perfil</button></div>
+                <div className="flex justify-end pt-4"><button className="bg-[#c4a47c] text-[#121212] px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#d4b48c] transition-colors font-sans"><Save size={20}/> Salvar Perfil</button></div>
             </div>
         </div>
     );
@@ -1257,7 +1257,7 @@ const Dashboard = ({ onLogout, userId }) => {
                     fetch(`${supabaseUrl}/rest/v1/itens_cardapio?user_id=eq.${userId}&select=*`, { headers: supabaseHeaders }),
                     fetch(`${supabaseUrl}/rest/v1/pedidos?user_id=eq.${userId}&select=*,itens_pedido(*)&order=created_at.desc&limit=20`, { headers: supabaseHeaders })
                 ]);
-                const categorias = await catRes.json();
+                const categories = await catRes.json();
                 const itens = await itemsRes.json();
                 const peds = await pedRes.json();
                 
@@ -1286,8 +1286,8 @@ const Dashboard = ({ onLogout, userId }) => {
                     setPedidos(novosPeds);
                 }
 
-                if (categorias && !isInterval) {
-                    setMenuData(categorias.map(c => ({
+                if (categories && !isInterval) {
+                    setMenuData(categories.map(c => ({
                         categoryId: c.id,
                         category: c.nome,
                         items: itens.filter(i => i.categoria_id === c.id).map(i => ({
@@ -1460,10 +1460,10 @@ export default function App() {
                 fetch(`${supabaseUrl}/rest/v1/categorias?select=*&order=ordem.asc`, { headers: supabaseHeaders }),
                 fetch(`${supabaseUrl}/rest/v1/itens_cardapio?user_id=eq.${id}&select=*`, { headers: supabaseHeaders })
             ]);
-            const categorias = await catRes.json();
+            const categories = await catRes.json();
             const itens = await itemsRes.json();
-            if (categorias && itens) {
-                setClientMenuData(categorias.map(c => ({
+            if (categories && itens) {
+                setClientMenuData(categories.map(c => ({
                     categoryId: c.id,
                     category: c.nome,
                     items: itens.filter(i => i.categoria_id === c.id).map(i => ({
@@ -1572,7 +1572,7 @@ export default function App() {
     const appContent = (() => {
         if (isClientView) {
             if (loadingClient) return <div className="min-h-screen bg-[#000000] flex items-center justify-center text-[#c4a47c] font-serif text-xl animate-pulse">Carregando cardápio...</div>;
-            return <div className="min-h-screen bg-[#000000]"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
+            return <div className="h-screen max-h-screen bg-[#000000] overflow-hidden"><SimuladorCliente onBack={() => { window.location.href = window.location.origin + window.location.pathname; }} onAddPedido={() => {}} menuData={clientMenuData} userId={clientEstId} /></div>;
         }
 
         if (!isLoggedIn) return <LoginScreen onLogin={(id) => { setUserId(id); setIsLoggedIn(true); }} />;
