@@ -481,6 +481,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
     const [activeCategory, setActiveCategory] = useState(menuData[0]?.category || '');
     const [nomeCliente, setNomeCliente] = useState('');
     const [mesaCliente, setMesaCliente] = useState('');
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         if (menuData.length > 0 && !activeCategory) {
@@ -582,11 +583,7 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
                 onAddPedido(novoPedidoLocal);
             }
             
-            setCart([]);
-            setIsCartOpen(false);
-            setNomeCliente('');
-            setMesaCliente('');
-            onBack();
+            setShowSuccess(true);
         } catch (e) {
             console.error("Erro ao processar comanda", e);
         }
@@ -598,6 +595,37 @@ const SimuladorCliente = ({ onBack, onAddPedido, menuData, userId }) => {
 
     return (
         <div className="w-full h-screen max-h-screen bg-[#000000] border-l border-[#2a2a2a] relative flex flex-col animate-in slide-in-from-right overflow-hidden">
+            {showSuccess && (
+                <div className="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                    <div className="relative w-full max-w-sm bg-[#1e1e1e] border border-[#c4a47c]/50 rounded-2xl p-8 shadow-[0_0_50px_rgba(196,164,124,0.3)] flex flex-col items-center">
+                        <div className="text-6xl mb-4 animate-bounce">
+                            🎆
+                        </div>
+                        <div className="absolute -top-10 left-10 text-4xl animate-pulse delay-75">✨</div>
+                        <div className="absolute -bottom-5 right-10 text-4xl animate-pulse delay-150">🎉</div>
+                        <div className="absolute top-1/4 right-5 text-3xl animate-ping duration-1000">💥</div>
+                        <div className="absolute bottom-1/3 left-5 text-3xl animate-ping duration-1000 delay-300">💥</div>
+                        
+                        <h3 className="text-2xl font-serif text-[#c4a47c] mb-2 font-bold">Pedido na Cozinha!</h3>
+                        <p className="text-zinc-300 text-sm mb-6">Seu pedido foi enviado para a cozinha com sucesso. Prepare-se para saborear! 🧑‍🍳🎆</p>
+                        
+                        <button 
+                            onClick={() => {
+                                setShowSuccess(false);
+                                setCart([]);
+                                setIsCartOpen(false);
+                                setNomeCliente('');
+                                setMesaCliente('');
+                                onBack();
+                            }}
+                            className="w-full bg-[#c4a47c] hover:bg-[#d4b48c] text-[#121212] font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(196,164,124,0.2)]"
+                        >
+                            Entendido! 🎉
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <header className="bg-[#000000] p-4 border-b border-[#2a2a2a] flex justify-between items-center z-10">
                 <button onClick={onBack} className="text-[#c4a47c] p-2 hover:bg-[#2a2a2a] rounded-full transition-colors">
                     <ArrowLeft size={20} />
